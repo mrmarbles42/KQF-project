@@ -25,3 +25,8 @@ fruit_temp_combined %>%
   geom_point() 
 
 
+kqf_data_combined %>%
+  filter(is.na(rot_pct) != T & log_rot >=0) %>%
+  ggplot(aes(reorder(variety), log_rot)) +
+  geom_boxplot(outlier.shape = NA) +
+  facet_grid()
