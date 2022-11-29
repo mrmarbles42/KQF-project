@@ -1,0 +1,4 @@
+"0","hist(temp_precip$avg_temp)
+"
+"2","Error in hist.default(temp_precip$avg_temp) : 'x' must be numeric
+"

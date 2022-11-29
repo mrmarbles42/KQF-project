@@ -1,0 +1,8 @@
+"0",""
+"0","#treatment col clean"
+"0","comb_missing <- comb_data %>%"
+"0","  mutate(miss_treat = is.na(treatment)) %>%"
+"0","  group_by(miss_treat) %>%"
+"0","  arrange(miss_treat) %>%"
+"0","  vis_miss()"
+"0",""

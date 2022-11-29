@@ -1,0 +1,7 @@
+"0",""
+"0","rot_data <- comb_data %>%"
+"0","  filter(is.na(rot) == F)"
+"0",""
+"0","rot_data %>%"
+"0","  select(gtl, rot, color, kqf_final) %>%"
+"0","  vis_cor()"
