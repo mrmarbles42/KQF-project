@@ -216,6 +216,9 @@ kqf_data_combined <- fruit_temp_combined %>%
             by = comb_cols,
             suffix = c("_fruit", "_pest"))
 
+
+#full data clean----
+
 ##factor coercion
 kqf_data_combined$variety <- as_factor(kqf_data_combined$variety)
 kqf_data_combined$site <- as_factor(kqf_data_combined$site)
@@ -223,6 +226,10 @@ kqf_data_combined$rep <- as_factor(kqf_data_combined$rep)
 kqf_data_combined$data_source <- as_factor(kqf_data_combined$data_source)
 kqf_data_combined$treatment <- as_factor(kqf_data_combined$treatment)
 kqf_data_combined$ingredient <- as_factor(kqf_data_combined$ingredient)
+
+kqf_data_combined <- kqf_data_combined %>%
+  mutate(kqf_final = ifelse(year == 2021, 4, kqf_final))
+  
 
 #Extraneous object removal from environment----
 

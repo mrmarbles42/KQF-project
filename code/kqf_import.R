@@ -22,19 +22,12 @@ fruit_decas <- list(fruit_13,
                     fruit_16,
                     fruit_17,
                     fruit_18)
-
+fruit_decas$GTL <- NULL
 fruit_decas <-
   rbindlist(fruit_decas,
         fill = T)
 fwrite(fruit_decas, "decas_fruit_2013-2018.csv")
 
-rm(fruit_12,
-   fruit_13,
-   fruit_14,
-   fruit_15,
-   fruit_16,
-   fruit_17,
-   fruit_18)
 
 fruit_decas <- fruit_decas %>%
   select(grower_id,
@@ -81,4 +74,10 @@ temp_precip <- fread(here("data/base_files", "kqf_temp_precip.csv"))
 
 
 
-
+rm(fruit_12,
+   fruit_13,
+   fruit_14,
+   fruit_15,
+   fruit_16,
+   fruit_17,
+   fruit_18)
