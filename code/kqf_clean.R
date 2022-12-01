@@ -24,7 +24,7 @@ fruit_decas <- fruit_decas %>%
   filter(is.na(rot) == F) %>%
   ##create log_rot / year / month columns and collapse varieties by frequency
   mutate(
-    log_rot = if_else(rot == 0, 0, log10(rot + 0.01)) ,
+    log_rot = log10(rot + 1) ,
     variety = fct_collapse(variety, other = other_varieties),
     year = lubridate::year(date),
     month = lubridate::month(date),
@@ -38,8 +38,8 @@ fruit_decas <- fruit_decas %>%
          "rot_pct" = "rot")
 
 ##factor kqf values
-fruit_decas$kqf_final <- as.factor(fruit_decas$kqf_final)
-fruit_decas$kqf_pre <- as.factor(fruit_decas$kqf_pre)
+# fruit_decas$kqf_final <- as.factor(fruit_decas$kqf_final)
+# fruit_decas$kqf_pre <- as.factor(fruit_decas$kqf_pre)
 
 #CIG fruit data 2021----
 
@@ -48,7 +48,7 @@ fruit_cig <- fruit_cig %>%
   filter(is.na(rot_pct) == F) %>%
   ##create log_rot, variety, year, and data source columns
   mutate(
-    log_rot = if_else(rot_pct == 0, 0, log10(rot_pct + 0.01)),
+    log_rot = log10(rot_pct + 1),
     variety = as_factor("ST"),
     year = 2021,
     month = 10,
@@ -73,7 +73,7 @@ lw_ctrl_cig <- lw_ctrl_cig %>%
          yield_ac_lb = yield_ac_kg * 2.20463,
          data_source = "cig_lw",
          site = 0,
-         log_rot = if_else(rot_pct == 0, 0, log10(rot_pct + 0.01)),
+         log_rot = log10(rot_pct + 1),
          variety = "ST",
          kqf_final = 4,
          kqf_pre = 3)
@@ -86,9 +86,9 @@ lw_ctrl_cig <- lw_ctrl_cig %>%
 fruit_cig <- fruit_cig %>%
   bind_rows(lw_ctrl_cig)
 
-#factor kqf values
-fruit_cig$kqf_final <- as.factor(fruit_cig$kqf_final)
-fruit_cig$kqf_pre <- as.factor(fruit_cig$kqf_pre)
+# #factor kqf values
+# fruit_cig$kqf_final <- as.factor(fruit_cig$kqf_final)
+# fruit_cig$kqf_pre <- as.factor(fruit_cig$kqf_pre)
 
 #Decas pest data 2011-2018----
 
@@ -227,8 +227,8 @@ kqf_data_combined$data_source <- as_factor(kqf_data_combined$data_source)
 kqf_data_combined$treatment <- as_factor(kqf_data_combined$treatment)
 kqf_data_combined$ingredient <- as_factor(kqf_data_combined$ingredient)
 
-kqf_data_combined <- kqf_data_combined %>%
-  mutate(kqf_final = ifelse(year == 2021, 4, kqf_final))
+# kqf_data_combined <- kqf_data_combined %>%
+#   mutate(kqf_final = ifelse(year == 2021, 4, kqf_final))
   
 
 #Extraneous object removal from environment----
