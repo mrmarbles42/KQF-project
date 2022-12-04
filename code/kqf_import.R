@@ -22,11 +22,12 @@ fruit_decas <- list(fruit_13,
                     fruit_16,
                     fruit_17,
                     fruit_18)
+
 fruit_decas$GTL <- NULL
 fruit_decas <-
   rbindlist(fruit_decas,
         fill = T)
-fwrite(fruit_decas, "decas_fruit_2013-2018.csv")
+#fwrite(fruit_decas, "decas_fruit_2013-2018.csv")
 
 
 fruit_decas <- fruit_decas %>%
@@ -36,9 +37,7 @@ fruit_decas <- fruit_decas %>%
          Rot,
          Debris,
          Color,
-         Variety,
-         kqf_pre,
-         kqf_final)
+         Variety)
 
 colnames(fruit_decas) <- c("grower_id",
                                 "date",
@@ -46,9 +45,7 @@ colnames(fruit_decas) <- c("grower_id",
                                 "rot",
                                 "debris",
                                 "color",
-                                "variety",
-                                "kqf_pre",
-                                "kqf_final")
+                                "variety")
 
 #import decas_fruit data
 #fruit_decas <- fread(here("data", "decas_fruit_2013-2018.csv"))
@@ -81,3 +78,6 @@ rm(fruit_12,
    fruit_16,
    fruit_17,
    fruit_18)
+
+#kqf points----
+points <- fread(here("data/base_files", "kqf_points.csv"))

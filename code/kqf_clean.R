@@ -37,9 +37,6 @@ fruit_decas <- fruit_decas %>%
   rename("grower" = "grower_id",
          "rot_pct" = "rot")
 
-##factor kqf values
-# fruit_decas$kqf_final <- as.factor(fruit_decas$kqf_final)
-# fruit_decas$kqf_pre <- as.factor(fruit_decas$kqf_pre)
 
 #CIG fruit data 2021----
 
@@ -74,21 +71,11 @@ lw_ctrl_cig <- lw_ctrl_cig %>%
          data_source = "cig_lw",
          site = 0,
          log_rot = log10(rot_pct + 1),
-         variety = "ST",
-         kqf_final = 4,
-         kqf_pre = 3)
-
-# cig_fruit_cols <- c("site", "rep", "wt_p_berry", "yield_acre_barrel", "yield_ha_barrel",
-#                     "rot_pct", "yield_ac_kg",  "yield_ac_lb", "tacy", "absorbance", "log_rot", 
-#                     "variety", "year", "data_source")
+         variety = "ST")
 
 ##combine latewater controls and 24-site cig data
 fruit_cig <- fruit_cig %>%
   bind_rows(lw_ctrl_cig)
-
-# #factor kqf values
-# fruit_cig$kqf_final <- as.factor(fruit_cig$kqf_final)
-# fruit_cig$kqf_pre <- as.factor(fruit_cig$kqf_pre)
 
 #Decas pest data 2011-2018----
 
@@ -131,11 +118,14 @@ temp_precip <- temp_precip %>%
          year = lubridate::year(date))
 
 ##change avg_date to numeric
-#temp_precip$avg_temp <- as.numeric(temp_precip$avg_temp)
+temp_precip$avg_temp <- as.numeric(temp_precip$avg_temp)
 
-##change month and year to factors ordered by month name 
-#temp_precip$month <- factor(temp_precip$month, levels = month.name)
+# #change month and year to factors ordered by month name
+# temp_precip$month <- factor(temp_precip$month, levels = month.name)
 
+#kqf point values----
+points <- points %>%
+  mutate(year = as.numeric(date_year))
 
 #Pest data combine/clean----
 
@@ -189,8 +179,8 @@ fungicide_use <- pest_comb %>%
   #collapse fungicides w/ <50 instances and rm original column
   mutate(ingredient = fct_collapse(active_ingredient,
                                    other = other_ingredients)) %>%
-  select(-active_ingredient) 
-
+  select(-active_ingredient)
+  
 pest_temp_combined <- fungicide_use %>%
   full_join(temp_precip, by = c("year", "month"), suffix = c("_fungi", "_temps")) %>%
   select(-date_temps) %>%
@@ -214,7 +204,9 @@ comb_cols <- c("data_source", "date", "month", "year", "avg_temp_f", "tot_precip
 kqf_data_combined <- fruit_temp_combined %>%
   full_join(pest_temp_combined, 
             by = comb_cols,
-            suffix = c("_fruit", "_pest"))
+            suffix = c("_fruit", "_pest")) %>%
+  select(-avg_temp_fruit,
+         -avg_temp_pest)
 
 
 #full data clean----
@@ -227,9 +219,11 @@ kqf_data_combined$data_source <- as_factor(kqf_data_combined$data_source)
 kqf_data_combined$treatment <- as_factor(kqf_data_combined$treatment)
 kqf_data_combined$ingredient <- as_factor(kqf_data_combined$ingredient)
 
-# kqf_data_combined <- kqf_data_combined %>%
-#   mutate(kqf_final = ifelse(year == 2021, 4, kqf_final))
-  
+#join kqf points column
+kqf_data_combined <- kqf_data_combined %>%
+  full_join(points, by = c("year")) %>%
+  select(-date_year)
+
 
 #Extraneous object removal from environment----
 
@@ -252,4 +246,4 @@ rm(fruit_cig,
 rm(fruit_temp_combined,
    pest_temp_combined)
 
-fwrite(kqf_data_combined, "kqf_data_combined.csv")
+#fwrite(kqf_data_combined, "kqf_data_combined.csv")
