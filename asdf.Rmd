@@ -1,0 +1,25 @@
+---
+title: ""
+date: "`r Sys.Date()`"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    default_style: "light"
+    downcute_theme: "default"
+---
+
+# Objective statement
+
+
+# Input data description
+
+
+# Data processing
+## Cleaning
+## transformations
+
+# Data exploration
+## Fruit quality
+## KQF
+
+# Further considerations

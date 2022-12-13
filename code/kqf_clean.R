@@ -21,10 +21,10 @@ other_varieties = c("OE","ORST","OH",
 
 fruit_decas <- fruit_decas %>%
   ##exclude rows w/ NA values in rot
-  filter(is.na(rot) == F) %>%
+  filter(is.na(rot_pct) == F) %>%
   ##create log_rot / year / month columns and collapse varieties by frequency
   mutate(
-    log_rot = log10(rot + 1) ,
+    log_rot = log10(rot_pct + 1) ,
     variety = fct_collapse(variety, other = other_varieties),
     year = lubridate::year(date),
     month = lubridate::month(date),
@@ -32,10 +32,7 @@ fruit_decas <- fruit_decas %>%
     data_source = as.factor("decas")
   ) %>%
   ##relocate date column to [,1]
-  relocate(date) %>%
-  ##rename columns
-  rename("grower" = "grower_id",
-         "rot_pct" = "rot")
+  relocate(date)
 
 
 #CIG fruit data 2021----
@@ -117,8 +114,8 @@ temp_precip <- temp_precip %>%
   mutate(month = lubridate::month(date),
          year = lubridate::year(date))
 
-##change avg_date to numeric
-temp_precip$avg_temp <- as.numeric(temp_precip$avg_temp)
+# ##change avg_date to numeric
+# temp_precip$avg_temp <- as.numeric(temp_precip$avg_temp)
 
 # #change month and year to factors ordered by month name
 # temp_precip$month <- factor(temp_precip$month, levels = month.name)
@@ -204,10 +201,7 @@ comb_cols <- c("data_source", "date", "month", "year", "avg_temp_f", "tot_precip
 kqf_data_combined <- fruit_temp_combined %>%
   full_join(pest_temp_combined, 
             by = comb_cols,
-            suffix = c("_fruit", "_pest")) %>%
-  select(-avg_temp_fruit,
-         -avg_temp_pest)
-
+            suffix = c("_fruit", "_pest"))
 
 #full data clean----
 
@@ -244,6 +238,7 @@ rm(fruit_cig,
    lw_ctrl_cig)
 
 rm(fruit_temp_combined,
-   pest_temp_combined)
+   pest_temp_combined,
+   points)
 
 #fwrite(kqf_data_combined, "kqf_data_combined.csv")

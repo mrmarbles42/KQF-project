@@ -39,10 +39,10 @@ fruit_decas <- fruit_decas %>%
          Color,
          Variety)
 
-colnames(fruit_decas) <- c("grower_id",
+colnames(fruit_decas) <- c("grower",
                                 "date",
                                 "bog",
-                                "rot",
+                                "rot_pct",
                                 "debris",
                                 "color",
                                 "variety")
@@ -66,11 +66,14 @@ pest_decas <- fread(here("data/base_files","pest_use_decas.csv"))
 pest_cig <- fread(here("data/base_files", "pest_use_cig.csv"))
 
 #climate parameters 2003-2020----
+#data import
 temp_precip <- fread(here("data/base_files", "kqf_temp_precip.csv"))
 
+#kqf points----
+points <- fread(here("data/base_files", "kqf_points.csv"))
 
 
-
+#ENV object removal
 rm(fruit_12,
    fruit_13,
    fruit_14,
@@ -78,6 +81,3 @@ rm(fruit_12,
    fruit_16,
    fruit_17,
    fruit_18)
-
-#kqf points----
-points <- fread(here("data/base_files", "kqf_points.csv"))
