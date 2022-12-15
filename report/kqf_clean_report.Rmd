@@ -18,16 +18,24 @@ library(data.table)
 library(lubridate)
 require(here)
 require(ggplot2)
+require(knitr)
 ```
 
 
-# Objective statement
+# **Objective statement**
 
 - Collect and prepare data files into a cohesive data set 
 - Check for consistency, accuracy, and uniformity
 - Remove redundant or inapplicable information
 
-# Input data descriptions {.tabset}
+# **Input data descriptions** {.tabset}
+\n
+- **Structure diagram of input data**
+\n
+```{r echo=FALSE}
+include_graphics(here("report", "data_structure.png"), dpi= 40)
+```
+
 ## Decas {.tabset}
 ### Decas fruit data
 - File name: grower_yield _rpt_2012- 2018.csv (8 files)
@@ -157,7 +165,7 @@ rm(fruit_12,
 ```
 \newpage 
 
-# Data processing {.tabset}
+# **Data processing** {.tabset}
 ## Decas {.tabset}
 ### Decas fruit quality 
 - Initial xlsx files reformatted and extraneous rows removed (in excel) 
@@ -314,7 +322,7 @@ points <- points %>%
 ```
 ## Combined data {.tabset}
 ### Combined pesticide data
-- Pest_cig and pest_decas tables merged on specified columns into “pest_comb” table
+- Pest_cig and pest_decas tables merged on specified columns into **“pest_comb”** table
 - Year and month columns created-
 - Duplicated ingredients from active_ingredient column renamed and collapsed into single factors
 - Active_ingredient column filtered for selected fungicides and renamed “fungicide_use”
@@ -380,7 +388,7 @@ pest_temp_combined <- fungicide_use %>%
 ```
 
 ### Combined fruit quality data
-- Fruit_cig and fruit_decas tables bound by rows into table “fruit_comb”
+- Fruit_cig and fruit_decas tables bound by rows into table **“fruit_comb”**
 - Temp_precip table and fruit_comb tables merged by year and month columns into table “fruit_temp_combined”
 ```{r}
 fruit_comb <- bind_rows(fruit_cig, fruit_decas)
@@ -393,7 +401,7 @@ fruit_temp_combined <- fruit_comb %>%
 ```
 
 ### Full dataset
-- Fruit_temp_combined and pest_temp_combined tables merged on specified columns into “kqf_data_combined” table
+- Fruit_temp_combined and pest_temp_combined tables merged on specified columns into **“kqf_data_combined”** table
 - “Variety”, “site”, “rep”, “data_source”, “treatment”, and “ingredient” columns coerced to factors
 - Kqf_data_combined and points tables merged on year column into “kqf_data_combined”
 
@@ -422,7 +430,7 @@ kqf_data_combined <- kqf_data_combined %>%
 ```
 
 \newpage
-# Data exploration {.tabset}
+# **Data exploration** {.tabset}
 
 ## Fruit quality
 ### Graphical
@@ -433,9 +441,13 @@ kqf_data_combined %>%
   group_by(year) %>%
   filter(year %in% 2013:2018) %>%
   ggplot(aes(as.factor(year), log_rot)) +
-  geom_boxplot()
+  geom_boxplot() +
+  labs(x = "Year",
+       y = "Rot % (log)",
+       title = "Log(Rot) Percentage by Year") +
+  theme_grey() 
 ```
-**log(rot) by variety
+** log(rot) by variety
 ```{r}
 kqf_data_combined$variety <- factor(kqf_data_combined$variety, levels = c("other", "BL", "EB", "HO", "ST"))
 
@@ -444,15 +456,44 @@ kqf_data_combined %>%
   filter(is.na(variety) != T) %>%
   ggplot(aes(as.factor(variety), log_rot)) +
   geom_boxplot() +
-  labs()
+  labs(x = "Variety",
+       y = "Rot % (log)",
+       title = "Log(Rot) Percentage by Variety") +
+  theme_grey() 
 ```
 
 
 ### numerical
 
 ## KQF
-###graphical
+### graphical
+```{r}
+
+```
 
 ### numerical
+```{r}
 
-# Further considerations
+```
+
+# **Further considerations**
+### **Questions that arose in the process:**
+\n
+- Is there a relationship between fungicide application counts and KQF values by year?
+
+- What is the correlation between number/type of fungicide applications and mean rot %? and Kqf value?
+
+- Which KQF factor is a better single predictor of quality; total precipitation, sunshine hours, or average temperature? 
+
+- Is final KQF the most effective for prediction? What is the relative predictive strength/weakness of the preliminary KQF compared to final?
+
+
+### **Next steps:**
+
+- Integrate additional data points into the combined set (as appropriate)
+
+- Fully define investigative hypotheses
+
+- Perform more comprehensive data analysis to test hypotheses
+
+- Construct publication-quality graphics and tables

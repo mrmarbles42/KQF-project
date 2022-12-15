@@ -31,7 +31,8 @@ application_by_kqf_year <- kqf_data_combined %>%
   filter(year %in% 2013:2018,
          ingredient %in% c("Chlorothalonil", "Azoxystrobin", "Fenbuconazole",
                            "EBDC", "Copper Hydroxide")) %>%
-  count(ingredient)
+  count(ingredient, sort = T) 
+  
 
 kqf_apps <- application_by_kqf_year %>%
   full_join(points, by = c("year"))
@@ -45,3 +46,4 @@ kqf_data_combined %>%
   summarize(cum_precip = sum(tot_precip),
             final_points = factor(unique(final_points)))
   
+

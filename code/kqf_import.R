@@ -56,7 +56,7 @@ colnames(fruit_decas) <- c("grower",
 fruit_cig <- fread(here("data/base_files", "cig_yield_bloom.csv"))
 
 ##import latewater control data
-lw_ctrl_cig <- fread(here("data", "2021_cig_latewater_controls.csv"))
+lw_ctrl_cig <- fread(here("data/base_files", "2021_cig_latewater_controls.csv"))
 
 #Decas pest data 2011-2018----
 pest_decas <- fread(here("data/base_files","pest_use_decas.csv"))

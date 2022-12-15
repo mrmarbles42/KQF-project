@@ -84,3 +84,11 @@ kqf_data_combined %>%
   mutate(mean_rot = mean(rot_pct)) %>%
   ggplot(aes(factor(final_points), rot_pct)) +
   geom_point()
+
+#mean rot by year
+kqf_data_combined %>%
+  group_by(year) %>%
+  filter(year %in% 2013:2018) %>%
+  summarize(mean_rot = mean(rot_pct, na.rm = T))%>%
+  ggplot(aes(factor(year), mean_rot)) +
+  geom_point() 
