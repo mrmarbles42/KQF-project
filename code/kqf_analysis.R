@@ -34,9 +34,6 @@ application_by_kqf_year <- kqf_data_combined %>%
   count(ingredient, sort = T) 
   
 
-kqf_apps <- application_by_kqf_year %>%
-  full_join(points, by = c("year"))
-rm(kqf_apps)
 
 #relation between cumulative precep and kqf in march-october
 kqf_data_combined %>%

@@ -80,3 +80,14 @@ pest_data_2 %>%
   geom_boxplot()
 
 (aov(lm(comb_data$Rot ~ comb_data$Variety)))
+
+kqf_data_combined %>%
+  group_by(year)%>%
+  filter(month %in% 9:12,
+         year %in% 2013:2022) %>%
+  ggplot(aes(factor(month), rot_pct, shape = factor(year))) +
+  geom_jitter(alpha = 0.2) 
+
+cor.test(kqf_data_combined$log_rot, kqf_data_combined$avg_temp_f, 
+         method = "kendall",
+         exact = F)
