@@ -575,10 +575,10 @@ summary(kqf_data_combined)
 
 ### numeric
 ```{r}
-# Avg_temp F ~ tot_precip
-cor(kqf_data_combined$avg_temp_f, kqf_data_combined$tot_precip,
-    method = "spearman",
-    use = "pairwise.complete.obs")
+# # Avg_temp F ~ tot_precip
+# cor(kqf_data_combined$avg_temp_f, kqf_data_combined$tot_precip,
+#     method = "spearman",
+#     use = "pairwise.complete.obs")
 
 ```
 
