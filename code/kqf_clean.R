@@ -203,6 +203,11 @@ kqf_data_combined <- fruit_temp_combined %>%
             by = comb_cols,
             suffix = c("_fruit", "_pest"))
 
+#join kqf points column
+kqf_data_combined <- kqf_data_combined %>%
+  full_join(points, by = c("year")) %>%
+  select(-date_year)
+
 #full data clean----
 
 ##factor coercion
@@ -212,11 +217,7 @@ kqf_data_combined$rep <- as_factor(kqf_data_combined$rep)
 kqf_data_combined$data_source <- as_factor(kqf_data_combined$data_source)
 kqf_data_combined$treatment <- as_factor(kqf_data_combined$treatment)
 kqf_data_combined$ingredient <- as_factor(kqf_data_combined$ingredient)
-
-#join kqf points column
-kqf_data_combined <- kqf_data_combined %>%
-  full_join(points, by = c("year")) %>%
-  select(-date_year)
+kqf_data_combined$final_points <- as_factor(kqf_data_combined$final_points)
 
 
 #Extraneous object removal from environment----
