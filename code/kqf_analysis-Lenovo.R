@@ -1,55 +1,33 @@
 require(here)
-require(nlme)
 
 source(here("code", "kqf_clean.R"))
 
 
-#NLME
 
-lme4::lmer(rot_pct ~ avg_temp_f + (tot_precip || year),
-           data = fruit_data_combined)
-
-lme4::lmer(avg_temp_f ~ month + (tot_precip | year),
-           data = fruit_data_combined)
-
-#temperature by temporal factors w/ precip g/month as RE
-lme4::lmer(avg_temp_f ~ month + year + (tot_precip | month), 
-  data = fruit_data_combined)
-
-#rot_pct by climate factors w/ precip grouped by bog as RE
-lme4::lmer(rot_pct ~ avg_temp_f + tot_precip + (tot_precip |  bog), 
-  data = fruit_data_combined,
-  #na.action =  na.omit(default),
-  )
 # #what are average rot percentages by kqf level?
-# rot_by_kqf <- fruit_data_combined %>%
+# rot_by_kqf <- kqf_data_combined %>%
 #   group_by(final_points) %>%
 #   summarize(mean = mean(rot_pct, na.rm = T))
 
 # 
-#average rot percentage by variety
-rot_by_variety <- fruit_data_combined %>%
-  group_by(variety) %>%
-  summarize(mean = mean(rot_pct, na.rm = T))
-
-fruit_data_combined %>%
-  group_by(variety) %>%
-  summarize(mean = mean(rot_pct, 
-                        na.rm = T)) %>%
-  arrange(desc(mean), .by_group = T)
+# #average rot percentage by variety
+# rot_by_variety <- kqf_data_combined %>%
+#   group_by(variety) %>%
+#   summarize(mean = mean(rot_pct, na.rm = T))
+# 
 # 
 # #average rot by data source
-# rot_by_source <- fruit_data_combined %>%
+# rot_by_source <- kqf_data_combined %>%
 #   group_by(data_source) %>%
 #   summarize(mean = mean(rot_pct, na.rm = T))
 # 
 # #average rot by year
-# rot_by_year <- fruit_data_combined %>%
+# rot_by_year <- kqf_data_combined %>%
 #   group_by(year) %>%
 #   summarise(mean = mean(rot_pct, na.rm = T))
 # 
 # #relationship between fungicide application counts and kqf by year
-# application_by_kqf_year <- pest_data_combined %>%
+# application_by_kqf_year <- kqf_data_combined %>%
 #   group_by(year) %>%
 #   filter(year %in% 2013:2018,
 #          ingredient %in% c("Chlorothalonil", "Azoxystrobin", "Fenbuconazole",
@@ -59,7 +37,7 @@ fruit_data_combined %>%
 # 
 # 
 # #relation between cumulative precip and kqf in march-october
-# fruit_data_combined %>%
+# kqf_data_combined %>%
 #   group_by(year) %>%
 #   filter(month %in% 3:10,
 #          year %in% 2013:2018) %>%
@@ -72,43 +50,53 @@ fruit_data_combined %>%
 
 
 #rot_pct vis
-fruit_data_combined %>%
+kqf_data_combined %>%
   filter(is.na(final_points) == F) %>%
   ggplot(aes(as.factor(final_points), rot_pct)) +
   geom_point() +
   geom_jitter() 
 
 #log_rot vis
-logrot_vs_kqf <- fruit_data_combined %>%
+logrot_vs_kqf <- kqf_data_combined %>%
   filter(is.na(final_points) == F) %>%
   ggplot(aes(as.factor(final_points), log_rot)) +
   geom_jitter() +
   geom_point() 
 
 
-
-fruit_data_combined %>% 
+kqf_data_combined %>% 
+  group_by(final_points) %>%
+  filter(is.na(log_rot) == F) %>%
   ggplot(aes(log_rot)) +
   geom_histogram(bins = 10) +
   facet_wrap(~final_points)
 
 #color vis
-fruit_data_combined %>%
+kqf_data_combined %>%
   filter(is.na(final_points) == F) %>%
   ggplot(aes(final_points, color)) +
   geom_point() +
   geom_jitter() 
 
 #LogRot lm (no int)
-lm(fruit_data_combined$log_rot ~ fruit_data_combined$final_points + 0)
+logrot_lm <- lm(kqf_data_combined$log_rot ~ kqf_data_combined$final_points)
 #color lm (no int)
-lm(fruit_data_combined$color ~ fruit_data_combined$final_points + 0)
+color_lm <- lm(kqf_data_combined$color ~ kqf_data_combined$final_points)
 
-summary(rot_kqf_lm)
+summary(logrot_lm)
+summary(color_lm)
 
+
+boxplot(kqf_data_combined$rot_pct ~ kqf_data_combined$final_points)
+boxplot(kqf_data_combined$color ~ kqf_data_combined$final_points)
+#mean rot values by kqf category
+rotsum <- kqf_data_combined %>%
+  group_by(final_points) %>%
+  filter(is.na(log_rot) == F) %>%
+  summarize(mean_by_kqf = mean(log_rot))
 
 #pairs plot numeric vis
-kqf_int <- fruit_data_combined %>%
+kqf_int <- kqf_data_combined %>%
   select(tacy,
          absorbance,
          log_rot,
@@ -121,11 +109,13 @@ kqf_int <- fruit_data_combined %>%
 kqf_pairs <- pairs(kqf_int)
  
 
-
-
-july <- subset(rot_kqf_vals, month = 7)
-
-obj2 <- lmer(rot_pct ~ avg_temp_f + tot_precip + (1| final_points),fruit_data_combined)
 #Which KQF factor is a more accurate predictor of keeping quality; total precipitation, sunshine hours, or mean temperature?
-  
-summary(obj2)
+
+lm(final_points ~ tot_precip, data = kqf_data_combined)
+
+lm(final_points ~ (avg_temp_f), data = kqf_data_combined)
+
+
+mix_fact_lm <-lm(final_points ~ avg_temp_f + tot_precip, data = kqf_data_combined)
+
+

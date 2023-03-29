@@ -1,12 +1,11 @@
-library(tidyverse)
+require(tidyverse)
 library(data.table)
 library(lubridate)
-library(visdat)
-library(here)
-library(forcats)
+require(visdat)
+require(here)
+require(forcats)
 
 source(here("code", "kqf_import.R"))
-
 
 #Decas fruit data 2013-2018----
 
@@ -29,11 +28,52 @@ fruit_decas <- fruit_decas %>%
     variety = fct_collapse(variety, other = other_varieties),
     year = lubridate::year(date),
     month = lubridate::month(date),
-    ##create data_source column
+  ##create data_source column
     data_source = as.factor("decas")
   ) %>%
   ##relocate date column to [,1]
   relocate(date)
+
+
+#CIG fruit data 2021----
+
+fruit_cig <- fruit_cig %>%
+  ##exclude rows w/ NA values in rot
+  filter(is.na(rot_pct) == F) %>%
+  ##create log_rot, variety, year, and data source columns
+  mutate(
+    log_rot = log10(rot_pct + 1),
+    variety = as_factor("ST"),
+    year = 2021,
+    month = 10,
+    data_source = "cig"
+  ) %>%
+  rename("yield_acre_barrel" = "yield_per_ac_barrel",
+         "yield_ha_barrel" = "yield_p_ha_barrel",
+         "yield_ac_kg" = "yield_p_ac_kg",
+         "yield_ac_lb" = "yield_p_ac_lb",
+         "site" = "Site",
+         "rep" = "Rep")
+
+
+lw_ctrl_cig <- lw_ctrl_cig %>%
+  #rename cols based on cig_fruit names
+  rename("yield_acre_barrel" = "yield per acre",
+         "rot_pct" = "pct_rot",
+         "wt_p_berry" = "wt_per_berry") %>%
+  #create yield, data_source, site, variety, kqf, and log(rot) columns
+  mutate(yield_ha_barrel = yield_acre_barrel * 2.471,
+         yield_ac_kg = yield_acre_barrel * 45.35929257,
+         yield_ac_lb = yield_ac_kg * 2.20463,
+         data_source = "cig_lw",
+         site = 0,
+         log_rot = log10(rot_pct + 1),
+         variety = "ST")
+
+##combine latewater controls and 24-site cig data
+fruit_cig <- fruit_cig %>%
+  bind_rows(lw_ctrl_cig)
+
 #Decas pest data 2011-2018----
 
 ##application_date (char to POSIXct)
@@ -68,16 +108,21 @@ pest_cig <- pest_cig %>%
   mutate(data_source = 'cig') %>%
   rename("bog" = "Bog")
 
-#temperatures 2003-2021----
+#climate averages 2003-2021----
 
 temp_precip <- temp_precip %>%
   mutate(month = lubridate::month(date),
          year = lubridate::year(date))
 
+# ##change avg_date to numeric
+# temp_precip$avg_temp <- as.numeric(temp_precip$avg_temp)
+
+# #change month and year to factors ordered by month name
+# temp_precip$month <- factor(temp_precip$month, levels = month.name)
+
 #kqf point values----
 points <- points %>%
-  mutate(year = as.numeric(date_year)) %>%
-  select(-date_year)
+  mutate(year = as.numeric(date_year))
 
 #Pest data combine/clean----
 
@@ -132,32 +177,61 @@ fungicide_use <- pest_comb %>%
   mutate(ingredient = fct_collapse(active_ingredient,
                                    other = other_ingredients)) %>%
   select(-active_ingredient)
-
-pest_data_combined <- fungicide_use %>%
+  
+pest_temp_combined <- fungicide_use %>%
   full_join(temp_precip, by = c("year", "month"), suffix = c("_fungi", "_temps")) %>%
   select(-date_temps) %>%
-  rename("date" = "date_fungi") %>%
-  full_join(points, by = c("year")) %>%
-  select(date, year ,month,
-         avg_temp_f, tot_precip,
-         grower, bog,
-         pre_points,final_points)
+  rename("date" = "date_fungi")
 
-  
 #fruit data combine----
 
-fruit_data_combined <- fruit_decas %>%
+fruit_comb <- bind_rows(fruit_cig, fruit_decas)
+
+fruit_temp_combined <- fruit_comb %>%
   full_join(temp_precip, by = c("year", "month")) %>%
-  rename("date" = "date.x") %>%
+  select(-date.y) %>%
+  rename("date" = "date.x")
+
+#full data combine----
+
+##define joining columns for combined data
+comb_cols <- c("data_source", "date", "month", "year", "avg_temp_f", "tot_precip", "grower", "bog", "treatment")
+
+#Join all columns on joining vec
+kqf_data_combined <- fruit_temp_combined %>%
+  full_join(pest_temp_combined, 
+            by = comb_cols,
+            suffix = c("_fruit", "_pest"))
+
+#join kqf points column
+kqf_data_combined <- kqf_data_combined %>%
   full_join(points, by = c("year")) %>%
-  select(date, year ,month,
-         avg_temp_f, tot_precip,
-         grower, bog, variety,
-         color, rot_pct, log_rot,
-         pre_points,final_points)
+  select(-date_year)
 
-
+pest_data_combined <- pest_temp_combined %>%
+  full_join(points, by = c("year")) %>%
+  select(-date_year)
 #full data clean----
+
+##factor coercion
+kqf_data_combined$variety <- as_factor(kqf_data_combined$variety)
+kqf_data_combined$site <- as_factor(kqf_data_combined$site)
+kqf_data_combined$rep <- as_factor(kqf_data_combined$rep)
+kqf_data_combined$data_source <- as_factor(kqf_data_combined$data_source)
+kqf_data_combined$treatment <- as_factor(kqf_data_combined$treatment)
+kqf_data_combined$ingredient <- as_factor(kqf_data_combined$ingredient)
+kqf_data_combined$final_points <- as_factor(kqf_data_combined$final_points)
+
+#pivot wider
+# decas_data_wide <- kqf_data_combined %>%
+#   filter(data_source == "decas",
+#          is.na(month) == F,
+#          is.na(rot_pct) == F) %>%
+#   select(date, year ,month, 
+#          avg_temp_f, tot_precip, 
+#          grower, bog, variety, 
+#          color, rot_pct, log_rot,
+#          pre_points,final_points) 
 
 #Extraneous object removal from environment----
 
@@ -169,10 +243,16 @@ rm(pest_comb,
 
 rm(other_ingredients,
    other_varieties,
+   comb_cols,
    temp_precip)
 
-rm(lw_ctrl_cig,
-   fruit_cig,
-   fruit_decas)
+rm(fruit_cig)
 
-rm(points)
+rm(fruit_comb,
+   lw_ctrl_cig)
+
+rm(fruit_temp_combined,
+   pest_temp_combined,
+   points)
+
+#fwrite(kqf_data_combined, "kqf_data_combined.csv")

@@ -47,15 +47,15 @@ colnames(fruit_decas) <- c("grower",
                                 "color",
                                 "variety")
 
-#import decas_fruit data
+
 #fruit_decas <- fread(here("data", "decas_fruit_2013-2018.csv"))
 
 #CIG fruit data 2021----
 
-##import 24-site CIG data 
+##import 24-site CIG data
 fruit_cig <- fread(here("data/base_files", "cig_yield_bloom.csv"))
 
-##import latewater control data
+##import latewater control data----
 lw_ctrl_cig <- fread(here("data/base_files", "2021_cig_latewater_controls.csv"))
 
 #Decas pest data 2011-2018----
