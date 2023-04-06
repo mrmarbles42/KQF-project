@@ -128,11 +128,15 @@ obj2 <- lmer(rot_pct ~ avg_temp_f + tot_precip + (1| final_points),fruit_data_co
   
 summary(obj2)
 
-#Summary statistics----
+##Summary statistics----
 
-
+#september mean
 fruit_data_wide %>%
   group_by(bog) %>%
   filter(is.na(temp_9) == F) %>%
-  summarize(temp_9_avg = mean(temp_9),
-            n = n())
+  summarize(max = max(temp_9),
+            min = min(temp_9),
+            mean = mean(temp_9),
+            median = median(temp_9),
+            n = n()) %>%
+  arrange(bog, .by_group = T)
