@@ -156,8 +156,28 @@ fruit_data_combined <- fruit_decas %>%
          color, rot_pct, log_rot,
          pre_points,final_points)
 
+#Remove duplicates fruit data
+fruit_data_unique <- fruit_data_combined %>%
+  unique()
 
-#full data clean----
+#Fruit data pivot----
+
+fruit_data_unique$month_2 <- fruit_data_unique$month
+
+fruit_data_wide <- fruit_data_unique %>%
+  filter(is.na(date) != T,
+         month %in% c(3,4,5,6,7,8,9,10,11,12),
+         year %in% c(2013,2014,2015,2016,2017,2018))
+
+
+fruit_data_wide <- fruit_data_unique %>%
+pivot_wider(names_from =  month,
+            names_prefix = "temp_",
+            values_from = avg_temp_f) %>%
+  pivot_wider(names_from = month_2,
+              names_prefix = "precip_",
+              values_from = tot_precip)
+
 
 #Extraneous object removal from environment----
 

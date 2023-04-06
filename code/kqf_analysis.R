@@ -1,6 +1,7 @@
-require(here)
-require(nlme)
-
+library(here)
+library(nlme)
+library(lme4)
+library(GGally)
 source(here("code", "kqf_clean.R"))
 
 
@@ -85,7 +86,7 @@ logrot_vs_kqf <- fruit_data_combined %>%
   geom_jitter() +
   geom_point() 
 
-
+ggpairs()
 
 fruit_data_combined %>% 
   ggplot(aes(log_rot)) +
@@ -95,9 +96,8 @@ fruit_data_combined %>%
 #color vis
 fruit_data_combined %>%
   filter(is.na(final_points) == F) %>%
-  ggplot(aes(final_points, color)) +
-  geom_point() +
-  geom_jitter() 
+  ggplot(aes(variety, log_rot)) +
+  geom_boxplot(aes(color = variety))  
 
 #LogRot lm (no int)
 lm(fruit_data_combined$log_rot ~ fruit_data_combined$final_points + 0)
@@ -109,16 +109,14 @@ summary(rot_kqf_lm)
 
 #pairs plot numeric vis
 kqf_int <- fruit_data_combined %>%
-  select(tacy,
-         absorbance,
+  select(
          log_rot,
-         debris,
          color,
          avg_temp_f,
          tot_precip,
          final_points)
 
-kqf_pairs <- pairs(kqf_int)
+kqf_pairs <- ggpairs(kqf_int)
  
 
 
@@ -129,3 +127,12 @@ obj2 <- lmer(rot_pct ~ avg_temp_f + tot_precip + (1| final_points),fruit_data_co
 #Which KQF factor is a more accurate predictor of keeping quality; total precipitation, sunshine hours, or mean temperature?
   
 summary(obj2)
+
+#Summary statistics----
+
+
+fruit_data_wide %>%
+  group_by(bog) %>%
+  filter(is.na(temp_9) == F) %>%
+  summarize(temp_9_avg = mean(temp_9),
+            n = n())
