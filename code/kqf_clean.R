@@ -176,9 +176,18 @@ pivot_wider(names_from =  month,
             values_from = avg_temp_f) %>%
   pivot_wider(names_from = month_2,
               names_prefix = "precip_",
-              values_from = tot_precip)
+              values_from = tot_precip) %>%
+  select(date, year,
+         grower, bog, variety,
+         color, rot_pct, log_rot,
+         pre_points, final_points,
+         temp_9, temp_10, temp_11, temp_12,
+         precip_9, precip_10, precip_11, precip_12)
 
+fruit_data_wide$pre_points <- as.factor(fruit_data_wide$pre_points)
+fruit_data_wide$final_points <- as.factor(fruit_data_wide$final_points)
 
+mean(fruit_data_wide$temp_10, na.rm = T)
 #Extraneous object removal from environment----
 
 rm(pest_cig, pest_decas)

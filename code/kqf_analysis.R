@@ -7,13 +7,13 @@ source(here("code", "kqf_clean.R"))
 
 #NLME
 
-lme4::lmer(rot_pct ~ avg_temp_f + (tot_precip || year),
-           data = fruit_data_combined)
+lme4::lmer(rot_pct ~ temp_10 + (precip_10 || year),
+           data = fruit_data_wide)
 
-lme4::lmer(avg_temp_f ~ month + (tot_precip | year),
-           data = fruit_data_combined)
+lme4::lmer( log_rot ~ temp_10 + precip_10 +(1 | variety),
+           data = fruit_data_wide)
 
-#temperature by temporal factors w/ precip g/month as RE
+#temperature by temporals w/ precip g/month as RE
 lme4::lmer(avg_temp_f ~ month + year + (tot_precip | month), 
   data = fruit_data_combined)
 
@@ -30,6 +30,16 @@ lme4::lmer(rot_pct ~ avg_temp_f + tot_precip + (tot_precip |  bog),
 # 
 #average rot percentage by variety
 rot_by_variety <- fruit_data_combined %>%
+  group_by(variety) %>%
+  summarize(mean = mean(rot_pct, na.rm = T))
+
+fruit_data_combined %>%
+  filter(is.na(rot_pct) == F) %>%
+  group_by(variety) %>%
+  summarize(mean = mean(rot_pct, na.rm = T))
+
+fruit_data_wide %>%
+  filter(is.na(rot_pct) == F) %>%
   group_by(variety) %>%
   summarize(mean = mean(rot_pct, na.rm = T))
 
