@@ -5,7 +5,7 @@ library(GGally)
 source(here("code", "kqf_clean.R"))
 
 
-#NLME
+#NLME----
 
 lme4::lmer(rot_pct ~ temp_10 + (precip_10 || year),
            data = fruit_data_wide)
@@ -13,15 +13,24 @@ lme4::lmer(rot_pct ~ temp_10 + (precip_10 || year),
 lme4::lmer( log_rot ~ temp_10 + precip_10 +(1 | variety),
            data = fruit_data_wide)
 
+lme4::lmer( log_rot ~ temp_10 + precip_10 +(1 | bog),
+            data = fruit_data_combined)
+
+lme4::lmer( log_rot ~ temp_10 + precip_10 +(1 | year),
+            data = fruit_data_wide)
 #temperature by temporals w/ precip g/month as RE
 lme4::lmer(avg_temp_f ~ month + year + (tot_precip | month), 
   data = fruit_data_combined)
 
 #rot_pct by climate factors w/ precip grouped by bog as RE
-lme4::lmer(rot_pct ~ avg_temp_f + tot_precip + (tot_precip |  bog), 
+lme4::lmer(rot_pct ~ avg_temp_f + tot_precip + (1 |  bog), 
   data = fruit_data_combined,
   #na.action =  na.omit(default),
   )
+
+
+# Measures of center/Measures of spread----
+
 # #what are average rot percentages by kqf level?
 # rot_by_kqf <- fruit_data_combined %>%
 #   group_by(final_points) %>%
@@ -79,6 +88,7 @@ fruit_data_combined %>%
 #   
 # 
 
+#Visualizations----
 #What is the value of the final KQF value as a general predictor of harvest quality (rot %, color, weight, etc.)?
 
 
