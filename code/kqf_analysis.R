@@ -7,26 +7,26 @@ source(here("code", "kqf_clean.R"))
 
 #NLME----
 
-lme4::lmer(rot_pct ~ temp_10 + (precip_10 || year),
+#precip_10_year
+lme4::lmer(log_rot ~ precip_10 + (1 | year),
            data = fruit_data_wide)
-
-lme4::lmer( log_rot ~ temp_10 + precip_10 +(1 | variety),
+#precip_9_year
+lme4::lmer(log_rot ~ precip_9 + (1 | year),
            data = fruit_data_wide)
-
-lme4::lmer( log_rot ~ temp_10 + precip_10 +(1 | bog),
-            data = fruit_data_combined)
-
-lme4::lmer( log_rot ~ temp_10 + precip_10 +(1 | year),
+#pt_10_variety 
+lme4::lmer(log_rot ~ temp_10 + precip_10 +(1 | variety),
+           data = fruit_data_wide)
+#pt 10 bog
+lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),
             data = fruit_data_wide)
-#temperature by temporals w/ precip g/month as RE
-lme4::lmer(avg_temp_f ~ month + year + (tot_precip | month), 
-  data = fruit_data_combined)
+#pt_9_bog 
+lme4::lmer(log_rot ~ temp_9 + precip_9 + (1 | bog),
+           data = fruit_data_wide)
 
-#rot_pct by climate factors w/ precip grouped by bog as RE
-lme4::lmer(rot_pct ~ avg_temp_f + tot_precip + (1 |  bog), 
-  data = fruit_data_combined,
-  #na.action =  na.omit(default),
-  )
+#pt_10_year
+lme4::lmer(log_rot ~ temp_10 + precip_10 +(1 | year),
+            data = fruit_data_wide)
+
 
 
 # Measures of center/Measures of spread----

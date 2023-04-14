@@ -171,23 +171,30 @@ fruit_data_wide <- fruit_data_unique %>%
 
 
 fruit_data_wide <- fruit_data_unique %>%
-pivot_wider(names_from =  month,
+  #filter NA/month/year
+  filter(is.na(date) != T,
+         month %in% c(3,4,5,6,7,8,9,10,11,12),
+         year %in% c(2013,2014,2015,2016,2017,2018)) %>%
+  #temperature pivot
+  pivot_wider(names_from =  month,
             names_prefix = "temp_",
             values_from = avg_temp_f) %>%
+  #precipitation pivot
   pivot_wider(names_from = month_2,
               names_prefix = "precip_",
               values_from = tot_precip) %>%
+  #select for desired fields
   select(date, year,
          grower, bog, variety,
          color, rot_pct, log_rot,
          pre_points, final_points,
          temp_9, temp_10, temp_11, temp_12,
          precip_9, precip_10, precip_11, precip_12)
-
+#KQF factorization
 fruit_data_wide$pre_points <- as.factor(fruit_data_wide$pre_points)
 fruit_data_wide$final_points <- as.factor(fruit_data_wide$final_points)
 
-mean(fruit_data_wide$temp_10, na.rm = T)
+
 #Extraneous object removal from environment----
 
 rm(pest_cig, pest_decas)
@@ -203,5 +210,8 @@ rm(other_ingredients,
 rm(lw_ctrl_cig,
    fruit_cig,
    fruit_decas)
+
+rm(fruit_data_unique,
+   pest_data_combined)
 
 rm(points)
