@@ -182,14 +182,15 @@ fruit_data_wide <- fruit_data_unique %>%
   #precipitation pivot
   pivot_wider(names_from = month_2,
               names_prefix = "precip_",
-              values_from = tot_precip) %>%
-  #select for desired fields
-  select(date, year,
-         grower, bog, variety,
-         color, rot_pct, log_rot,
-         pre_points, final_points,
-         temp_9, temp_10, temp_11, temp_12,
-         precip_9, precip_10, precip_11, precip_12)
+              values_from = tot_precip) 
+# %>%
+#   #select for desired fields
+#   select(date, year,
+#          grower, bog, variety,
+#          color, rot_pct, log_rot,
+#          pre_points, final_points,
+#          temp_9, temp_10, temp_11, temp_12,
+#          precip_9, precip_10, precip_11, precip_12)
 #KQF factorization
 fruit_data_wide$pre_points <- as.factor(fruit_data_wide$pre_points)
 fruit_data_wide$final_points <- as.factor(fruit_data_wide$final_points)
@@ -204,14 +205,13 @@ rm(pest_comb,
    comb_pest_cols)
 
 rm(other_ingredients,
-   other_varieties,
-   temp_precip)
+   other_varietiespt)
 
 rm(lw_ctrl_cig,
    fruit_cig,
    fruit_decas)
 
-rm(fruit_data_unique,
+rm(
    pest_data_combined)
 
 rm(points)

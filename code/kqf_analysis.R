@@ -1,5 +1,4 @@
 library(here)
-library(nlme)
 library(lme4)
 library(GGally)
 source(here("code", "kqf_clean.R"))
@@ -14,11 +13,15 @@ lme4::lmer(log_rot ~ precip_10 + (1 | year),
 lme4::lmer(log_rot ~ precip_9 + (1 | year),
            data = fruit_data_wide)
 #pt_10_variety 
-lme4::lmer(log_rot ~ temp_10 + precip_10 +(1 | variety),
+ab2 <- lme4::lmer(log_rot ~ temp_10 + precip_10 + variety +(1 | bog),
            data = fruit_data_wide)
-#pt 10 bog
-lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),
+
+pt_10_bog <- lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),
             data = fruit_data_wide)
+#pt 10 bog
+lme4::lmer(rot_pct ~ temp_10 + precip_10 + (1 | bog),
+           data = fruit_data_wide)
+
 #pt_9_bog 
 lme4::lmer(log_rot ~ temp_9 + precip_9 + (1 | bog),
            data = fruit_data_wide)
@@ -26,8 +29,6 @@ lme4::lmer(log_rot ~ temp_9 + precip_9 + (1 | bog),
 #pt_10_year
 lme4::lmer(log_rot ~ temp_10 + precip_10 +(1 | year),
             data = fruit_data_wide)
-
-
 
 # Measures of center/Measures of spread----
 
@@ -38,11 +39,11 @@ lme4::lmer(log_rot ~ temp_10 + precip_10 +(1 | year),
 
 # 
 #average rot percentage by variety
-rot_by_variety <- fruit_data_combined %>%
+fruit_data_wide %>%
   group_by(variety) %>%
   summarize(mean = mean(rot_pct, na.rm = T))
 
-fruit_data_combined %>%
+fruit_data_wide %>%
   filter(is.na(rot_pct) == F) %>%
   group_by(variety) %>%
   summarize(mean = mean(rot_pct, na.rm = T))
@@ -52,7 +53,7 @@ fruit_data_wide %>%
   group_by(variety) %>%
   summarize(mean = mean(rot_pct, na.rm = T))
 
-fruit_data_combined %>%
+fruit_data_wide %>%
   group_by(variety) %>%
   summarize(mean = mean(rot_pct, 
                         na.rm = T)) %>%
@@ -93,22 +94,21 @@ fruit_data_combined %>%
 
 
 #rot_pct vis
-fruit_data_combined %>%
+fruit_data_wide %>%
   filter(is.na(final_points) == F) %>%
   ggplot(aes(as.factor(final_points), rot_pct)) +
   geom_point() +
   geom_jitter() 
 
 #log_rot vis
-logrot_vs_kqf <- fruit_data_combined %>%
+logrot_vs_kqf <- fruit_data_wide %>%
   filter(is.na(final_points) == F) %>%
   ggplot(aes(as.factor(final_points), log_rot)) +
   geom_jitter() +
-  geom_point() 
+  geom_boxplot() 
 
-ggpairs()
 
-fruit_data_combined %>% 
+fruit_data_wide %>% 
   ggplot(aes(log_rot)) +
   geom_histogram(bins = 10) +
   facet_wrap(~final_points)
@@ -147,6 +147,11 @@ obj2 <- lmer(rot_pct ~ avg_temp_f + tot_precip + (1| final_points),fruit_data_co
 #Which KQF factor is a more accurate predictor of keeping quality; total precipitation, sunshine hours, or mean temperature?
   
 summary(obj2)
+
+
+
+1 - pt(abs(-7), df = 30)
+
 
 ##Summary statistics----
 
