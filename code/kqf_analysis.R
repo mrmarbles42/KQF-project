@@ -13,7 +13,7 @@ lme4::lmer(log_rot ~ precip_10 + (1 | year),
 lme4::lmer(log_rot ~ precip_9 + (1 | year),
            data = fruit_data_wide)
 #pt_10_variety 
-ab2 <- lme4::lmer(log_rot ~ temp_10 + precip_10 + variety +(1 | bog),
+ab2 <- lme4::lmer(log_rot ~ temp_1 + precip_1 + variety +(1 | bog),
            data = fruit_data_wide)
 
 pt_10_bog <- lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),

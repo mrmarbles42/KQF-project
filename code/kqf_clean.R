@@ -70,9 +70,25 @@ pest_cig <- pest_cig %>%
 
 #temperatures 2003-2021----
 
+
 temp_precip <- temp_precip %>%
   mutate(month = lubridate::month(date),
-         year = lubridate::year(date))
+         year = lubridate::year(date)) %>%
+  #filter for years of interest
+  filter(year %in% c(2012:2018)) 
+
+temp_precip$month_2 <- temp_precip$month
+temp_precip$month_0 <- temp_precip$month
+
+temp_precip <- temp_precip %>%
+  #temp pivot
+  pivot_wider(names_from =  month,
+              names_prefix = "temp_",
+              values_from = avg_temp_f) %>%
+  #precipitation pivot
+  pivot_wider(names_from = month_2,
+              names_prefix = "precip_",
+              values_from = tot_precip) 
 
 #kqf point values----
 points <- points %>%
@@ -134,66 +150,55 @@ fungicide_use <- pest_comb %>%
   select(-active_ingredient)
 
 pest_data_combined <- fungicide_use %>%
-  full_join(temp_precip, by = c("year", "month"), suffix = c("_fungi", "_temps")) %>%
+  full_join(temp_precip, by = c("year", "month" = "month_0"), suffix = c("_fungi", "_temps")) %>%
   select(-date_temps) %>%
   rename("date" = "date_fungi") %>%
-  full_join(points, by = c("year")) %>%
-  select(date, year ,month,
-         avg_temp_f, tot_precip,
-         grower, bog,
-         pre_points,final_points)
+  full_join(points, by = c("year")) 
 
   
 #fruit data combine----
 
-fruit_data_combined <- fruit_decas %>%
-  full_join(temp_precip, by = c("year", "month")) %>%
+fruit_data_wide <- fruit_decas %>%
+  full_join(temp_precip, by = c("year", "month" = "month_0")) %>%
   rename("date" = "date.x") %>%
+  #join points on year col
   full_join(points, by = c("year")) %>%
-  select(date, year ,month,
-         avg_temp_f, tot_precip,
-         grower, bog, variety,
-         color, rot_pct, log_rot,
-         pre_points,final_points)
-
-#Remove duplicates fruit data
-fruit_data_unique <- fruit_data_combined %>%
+  #Remove duplicates fruit data
   unique()
 
 #Fruit data pivot----
 
-fruit_data_unique$month_2 <- fruit_data_unique$month
-
-fruit_data_wide <- fruit_data_unique %>%
-  filter(is.na(date) != T,
-         month %in% c(3,4,5,6,7,8,9,10,11,12),
-         year %in% c(2013,2014,2015,2016,2017,2018))
-
-
-fruit_data_wide <- fruit_data_unique %>%
-  #filter NA/month/year
-  filter(is.na(date) != T,
-         month %in% c(3,4,5,6,7,8,9,10,11,12),
-         year %in% c(2013,2014,2015,2016,2017,2018)) %>%
-  #temperature pivot
-  pivot_wider(names_from =  month,
-            names_prefix = "temp_",
-            values_from = avg_temp_f) %>%
-  #precipitation pivot
-  pivot_wider(names_from = month_2,
-              names_prefix = "precip_",
-              values_from = tot_precip) 
-# %>%
-#   #select for desired fields
-#   select(date, year,
-#          grower, bog, variety,
-#          color, rot_pct, log_rot,
-#          pre_points, final_points,
-#          temp_9, temp_10, temp_11, temp_12,
-#          precip_9, precip_10, precip_11, precip_12)
-#KQF factorization
-fruit_data_wide$pre_points <- as.factor(fruit_data_wide$pre_points)
-fruit_data_wide$final_points <- as.factor(fruit_data_wide$final_points)
+# fruit_data_unique$month_2 <- fruit_data_unique$month
+# 
+# fruit_data_wide <- fruit_data_unique %>%
+#   filter(is.na(date) != T,
+#          year %in% c(2013,2014,2015,2016,2017,2018))
+# 
+# 
+# fruit_data_wide <- fruit_data_unique %>%
+#   #filter NA/month/year
+#   filter(is.na(date) != T,
+#          month %in% c(3,4,5,6,7,8,9,10,11,12),
+#          year %in% c(2013,2014,2015,2016,2017,2018)) %>%
+#   #temperature pivot
+#   pivot_wider(names_from =  month,
+#             names_prefix = "temp_",
+#             values_from = avg_temp_f) %>%
+#   #precipitation pivot
+#   pivot_wider(names_from = month_2,
+#               names_prefix = "precip_",
+#               values_from = tot_precip) 
+# # %>%
+# #   #select for desired fields
+# #   select(date, year,
+# #          grower, bog, variety,
+# #          color, rot_pct, log_rot,
+# #          pre_points, final_points,
+# #          temp_9, temp_10, temp_11, temp_12,
+# #          precip_9, precip_10, precip_11, precip_12)
+# #KQF factorization
+# fruit_data_wide$pre_points <- as.factor(fruit_data_wide$pre_points)
+# fruit_data_wide$final_points <- as.factor(fruit_data_wide$final_points)
 
 
 #Extraneous object removal from environment----
@@ -205,13 +210,13 @@ rm(pest_comb,
    comb_pest_cols)
 
 rm(other_ingredients,
-   other_varietiespt)
+   other_varieties)
 
 rm(lw_ctrl_cig,
    fruit_cig,
    fruit_decas)
 
-rm(
-   pest_data_combined)
+# rm(fruit_data_unique,
+#    fruit_data_combined)
 
 rm(points)
