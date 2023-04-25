@@ -1,35 +1,42 @@
+
 library(here)
 library(lme4)
 library(GGally)
+library(broom)
 source(here("code", "kqf_clean.R"))
 
 
 #NLME----
+m_9 <- lme4::lmer(log_rot ~ temp_9 + precip_9 + (1 | bog),
+                  data = fruit_data_wide)
 
-#precip_10_year
-lme4::lmer(log_rot ~ precip_10 + (1 | year),
+m_10 <- lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),
+                   data = fruit_data_wide)
+
+m_11 <- lme4::lmer(log_rot ~ temp_11 + precip_11 + (1 | bog),
+                   data = fruit_data_wide)
+
+m_12 <- lme4::lmer(log_rot ~ temp_12 + precip_12 + (1 | bog),
+                   data = fruit_data_wide)
+
+lme4::lmer(log_rot ~ temp_3 + precip_3 + (1 | bog),
            data = fruit_data_wide)
-#precip_9_year
-lme4::lmer(log_rot ~ precip_9 + (1 | year),
-           data = fruit_data_wide)
+fruit_data_wide %>%
+  group_by(bog)
+  nest()
+
+
 #pt_10_variety 
 ab2 <- lme4::lmer(log_rot ~ temp_1 + precip_1 + variety +(1 | bog),
            data = fruit_data_wide)
 
-pt_10_bog <- lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),
-            data = fruit_data_wide)
-#pt 10 bog
-lme4::lmer(rot_pct ~ temp_10 + precip_10 + (1 | bog),
-           data = fruit_data_wide)
 
-#pt_9_bog 
-lme4::lmer(log_rot ~ temp_9 + precip_9 + (1 | bog),
-           data = fruit_data_wide)
+grow_nest <- fruit_data_wide %>%
+  nest(-grower)
 
-#pt_10_year
-lme4::lmer(log_rot ~ temp_10 + precip_10 +(1 | year),
-            data = fruit_data_wide)
-
+nlme_coef <- read_csv(here("data", "kqf_nlme_coef - Sheet1.csv"))
+nlme_coef$temp <- abs(as.numeric(nlme_coef$temp))
+nlme_coef$precip <- abs(as.numeric(nlme_coef$precip))
 # Measures of center/Measures of spread----
 
 # #what are average rot percentages by kqf level?

@@ -1,7 +1,16 @@
 require(here)
 
-source(here("code", "kqf_clean.R"))
-#source(here("code", "kqf_analysis.R"))
+#source(here("code", "kqf_clean.R"))
+source(here("code", "kqf_analysis.R"))
+# 
+# nlme_coef <- read_csv(here("data", "kqf_nlme_coef - Sheet1.csv"))
+# nlme_coef$temp <- abs(as.numeric(nlme_coef$temp))
+
+nlme_coef %>%
+  filter(month %in% c(9,10,11)) %>%
+  ggplot(aes(as.factor(month), precip)) + 
+  geom_point() +
+  scale_y_continuous(limits = c(0,10), breaks = c(min(precip) -1, (sum(precip)/3), max(precip) + 1))
 
 #rot density plots
 
@@ -79,7 +88,7 @@ kqf_data_combined %>%
   facet_wrap(~year)
 
 #rot by kqf
-kqf_data_combined %>%
+fruit_data_wide %>%
   group_by(final_points) %>%
   mutate(mean_rot = mean(rot_pct)) %>%
   ggplot(aes(factor(final_points), rot_pct)) +

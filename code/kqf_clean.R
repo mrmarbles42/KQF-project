@@ -216,7 +216,5 @@ rm(lw_ctrl_cig,
    fruit_cig,
    fruit_decas)
 
-# rm(fruit_data_unique,
-#    fruit_data_combined)
-
-rm(points)
+rm(points,
+   temp_precip)
