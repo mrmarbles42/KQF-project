@@ -212,9 +212,10 @@ rm(pest_comb,
 rm(other_ingredients,
    other_varieties)
 
-rm(lw_ctrl_cig,
-   fruit_cig,
-   fruit_decas)
+rm(lw_ctrl_cig)
 
-rm(points,
-   temp_precip)
+# rm(fruit_cig,
+# fruit_decas)
+
+# rm(points,
+#    temp_precip)

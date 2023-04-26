@@ -10,7 +10,7 @@ nlme_coef %>%
   filter(month %in% c(9,10,11)) %>%
   ggplot(aes(as.factor(month), precip)) + 
   geom_point() +
-  scale_y_continuous(limits = c(0,10), breaks = c(min(precip) -1, (sum(precip)/3), max(precip) + 1))
+  scale_y_continuous(limits = c(0,10), breaks = c(0, (sum(precip)/3), 10))
 
 #rot density plots
 
@@ -26,6 +26,11 @@ kqf_data_combined %>%
   facet_grid(~data_source) +
   labs(title = "Rot percentage relative density by data source")
 
+
+fruit_data_wide %>%
+  filter(year %in% 2012:2018) %>%
+  ggplot(aes(as.factor(year), temp_11)) +
+  geom_boxplot()
 
 #----
 

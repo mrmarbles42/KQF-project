@@ -20,12 +20,18 @@ m_12 <- lme4::lmer(log_rot ~ temp_12 + precip_12 + (1 | bog),
                    data = fruit_data_wide)
 
 lme4::lmer(log_rot ~ temp_3 + precip_3 + (1 | bog),
-           data = fruit_data_wide)
+
+                      data = fruit_data_wide)
 fruit_data_wide %>%
   group_by(bog)
   nest()
 
+#summaries
 
+summary(m_9)
+summary(m_10)
+summary(m_11)
+  
 #pt_10_variety 
 ab2 <- lme4::lmer(log_rot ~ temp_1 + precip_1 + variety +(1 | bog),
            data = fruit_data_wide)
