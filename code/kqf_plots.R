@@ -14,7 +14,7 @@ nlme_coef %>%
 
 #rot density plots
 
-kqf_data_combined %>%
+fruit_data_wide %>%
   filter(rot_pct != 0 & data_source == "decas") %>%
   ggplot(aes(log_rot)) +
   geom_freqpoly()

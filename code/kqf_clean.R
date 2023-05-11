@@ -214,8 +214,7 @@ rm(other_ingredients,
 
 rm(lw_ctrl_cig)
 
-# rm(fruit_cig,
-# fruit_decas)
+ rm(fruit_cig)
 
-# rm(points,
-#    temp_precip)
+ rm(points,
+   temp_precip)
