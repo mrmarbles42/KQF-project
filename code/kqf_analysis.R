@@ -3,8 +3,6 @@ library(here)
 library(lme4)
 library(GGally)
 library(broom)
-library(knitr)
-library(kableExtra)
 source(here("code", "kqf_clean.R"))
 
 ##Summary statistics----
@@ -22,25 +20,10 @@ fruit_data_wide %>%
 
 # Measures of center/Measures of spread----
 
-# what are average rot percentages by kqf level? drop unused factor levels and create shiny table
-fruit_data_wide %>% 
-
-  filter(is.na(rot_pct) == F) %>%
-  group_by(final_points) %>%
-  summarize(mean = mean(rot_pct, na.rm = T),
-            median = median(rot_pct, na.rm = T),
-            sd = sd(rot_pct, na.rm = T),
-            n = n()) %>%
-  arrange(desc(mean), .by_group = T) %>%
-  mutate(final_points = fct_relevel(factor(final_points), "2", "3", "4", "7")) %>%
-  kable(caption = "Average rot percentage by kqf level") %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
-  save_kable(here("report", "rot_by_kqf.jpeg"))
-
-
-rot_by_kqf <- fruit_data_combined %>%
-   group_by(final_points) %>%
-   summarize(mean = mean(rot_pct, na.rm = T))
+# #what are average rot percentages by kqf level?
+# rot_by_kqf <- fruit_data_combined %>%
+#   group_by(final_points) %>%
+#   summarize(mean = mean(rot_pct, na.rm = T))
 
 # 
 #average rot percentage by variety
@@ -128,11 +111,9 @@ hist(m10_fit)
 plot(m10_fit, m10_resid,
      xlab = "Predicted values",
      ylab = "Residual values",
-     main = "Predicted vs Residuals") #fitted values vs residuals
+     main = "Predicted vs Residuals (model: m_10)") #fitted values vs residuals
 
-m_10 %>%
-  ggplot(aes(m10_fit, m10_resid)) + 
-  geom_point()
+qqnorm(m_10)
 ##November
 m_11 <- lme4::lmer(log_rot ~ temp_11 + precip_11 + (1 | bog),
                    data = fruit_data_wide)
