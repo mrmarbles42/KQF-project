@@ -3,7 +3,11 @@ library(here)
 library(lme4)
 library(GGally)
 library(broom)
+library(psych)
 source(here("code", "kqf_clean.R"))
+
+
+
 
 
 #NLME----
@@ -26,12 +30,29 @@ fruit_data_wide %>%
   group_by(bog)
   nest()
 
-#summaries
+#summaries----
+  obj <- describe(fruit_data_wide)
+
+  
+fruit_data_wide %>%
+  select(rot_pct, log_rot, debris, color, final_points) %>%
+  describeBy(., omit = T, group=fruit_data_wide$final_points)
+
+  vars <- c()
+tbl_sum <- fruit_data_wide %>%
+  group_by(grower,month) %>%
+    select(rot_pct, final_points)
+
+fruit_data_wide %>%
+  filter(is.na(rot_pct) == F) %>%
+  select(rot_pct, log_rot, color, variety) %>%
+  summary(.)
 
 summary(m_9)
 summary(m_10)
 summary(m_11)
-  
+m_11_sum <- summary(m_11)
+
 #pt_10_variety 
 ab2 <- lme4::lmer(log_rot ~ temp_1 + precip_1 + variety +(1 | bog),
            data = fruit_data_wide)
