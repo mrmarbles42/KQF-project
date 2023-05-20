@@ -3,67 +3,64 @@ library(here)
 library(lme4)
 library(GGally)
 library(broom)
-library(psych)
 source(here("code", "kqf_clean.R"))
 
 
+#NLME model & diagnostics----
 
-
-
-#NLME----
+##September
 m_9 <- lme4::lmer(log_rot ~ temp_9 + precip_9 + (1 | bog),
                   data = fruit_data_wide)
 
+m9_resid <- resid(m_9)
+hist(m9_resid)
+
+m9_fit <- fitted(m_9)
+hist(m9_fit)
+
+
+plot(m9_fit, m9_resid) #fitted values vs residuals
+
+##October
 m_10 <- lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),
                    data = fruit_data_wide)
 
+m10_resid <- resid(m_10)
+hist(m10_resid)
+
+m10_fit <- fitted(m_10)
+hist(m10_fit)
+
+
+plot(m10_fit, m10_resid) #fitted values vs residuals
+
+##November
 m_11 <- lme4::lmer(log_rot ~ temp_11 + precip_11 + (1 | bog),
                    data = fruit_data_wide)
 
-m_12 <- lme4::lmer(log_rot ~ temp_12 + precip_12 + (1 | bog),
-                   data = fruit_data_wide)
+m11_resid <- resid(m_11)
+hist(m11_resid)
 
-lme4::lmer(log_rot ~ temp_3 + precip_3 + (1 | bog),
+m11_fit <- fitted(m_11) 
+hist(m11_fit)
 
-                      data = fruit_data_wide)
-fruit_data_wide %>%
-  group_by(bog)
-  nest()
+plot(m11_fit, m11_resid)
 
-#summaries----
-  obj <- describe(fruit_data_wide)
-
-  
-fruit_data_wide %>%
-  select(rot_pct, log_rot, debris, color, final_points) %>%
-  describeBy(., omit = T, group=fruit_data_wide$final_points)
-
-  vars <- c()
-tbl_sum <- fruit_data_wide %>%
-  group_by(grower,month) %>%
-    select(rot_pct, final_points)
-
-fruit_data_wide %>%
-  filter(is.na(rot_pct) == F) %>%
-  select(rot_pct, log_rot, color, variety) %>%
-  summary(.)
+#summaries
 
 summary(m_9)
 summary(m_10)
 summary(m_11)
-m_11_sum <- summary(m_11)
-
-#pt_10_variety 
-ab2 <- lme4::lmer(log_rot ~ temp_1 + precip_1 + variety +(1 | bog),
-           data = fruit_data_wide)
 
 
-grow_nest <- fruit_data_wide %>%
-  nest(-grower)
 
-nlme_coef <- read_csv(here("data", "kqf_nlme_coef - Sheet1.csv"))
-nlme_coef$temp <- abs(as.numeric(nlme_coef$temp))
-nlme_coef$precip <- abs(as.numeric(nlme_coef$precip))
+
+
+# nlme_coef <- read_csv(here("data", "kqf_nlme_coef - Sheet1.csv"))
+# nlme_coef$temp <- abs(as.numeric(nlme_coef$temp))
+# nlme_coef$precip <- abs(as.numeric(nlme_coef$precip))
+
+
 # Measures of center/Measures of spread----
 
 # #what are average rot percentages by kqf level?
@@ -148,45 +145,40 @@ fruit_data_wide %>%
   facet_wrap(~final_points)
 
 #color vis
-fruit_data_combined %>%
+fruit_data_wide %>%
   filter(is.na(final_points) == F) %>%
-  ggplot(aes(variety, log_rot)) +
+  droplevels(.$variety) %>%
+  ggplot(aes(factor(variety), log_rot)) +
   geom_boxplot(aes(color = variety))  
 
-#LogRot lm (no int)
-lm(fruit_data_combined$log_rot ~ fruit_data_combined$final_points + 0)
-#color lm (no int)
-lm(fruit_data_combined$color ~ fruit_data_combined$final_points + 0)
 
-summary(rot_kqf_lm)
 
 
 #pairs plot numeric vis
 kqf_int <- fruit_data_combined %>%
   select(
-         log_rot,
-         color,
-         avg_temp_f,
-         tot_precip,
-         final_points)
+    log_rot,
+    color,
+    avg_temp_f,
+    tot_precip,
+    final_points)
 
 kqf_pairs <- ggpairs(kqf_int)
- 
 
 
 
-july <- subset(rot_kqf_vals, month = 7)
+t_val <- function(x, y = 30) {
+  (1 - pt(abs(x), df = y))
+} 
 
-obj2 <- lmer(rot_pct ~ avg_temp_f + tot_precip + (1| final_points),fruit_data_combined)
-#Which KQF factor is a more accurate predictor of keeping quality; total precipitation, sunshine hours, or mean temperature?
-  
-summary(obj2)
+#linear models----
 
+fruit_data_wide %>%
+  group_by(bog, grower) %>%
+  nest()
 
-
-1 - pt(abs(-7), df = 30)
-
-
+grow_nest <- fruit_data_wide %>%
+  nest(-grower)
 ##Summary statistics----
 
 #september mean
