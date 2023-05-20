@@ -3,70 +3,44 @@ library(here)
 library(lme4)
 library(GGally)
 library(broom)
+library(knitr)
+library(kableExtra)
 source(here("code", "kqf_clean.R"))
 
+##Summary statistics----
 
-#NLME model & diagnostics----
-
-##September
-m_9 <- lme4::lmer(log_rot ~ temp_9 + precip_9 + (1 | bog),
-                  data = fruit_data_wide)
-
-m9_resid <- resid(m_9)
-hist(m9_resid)
-
-m9_fit <- fitted(m_9)
-hist(m9_fit)
-
-
-plot(m9_fit, m9_resid) #fitted values vs residuals
-
-##October
-m_10 <- lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),
-                   data = fruit_data_wide)
-
-m10_resid <- resid(m_10)
-hist(m10_resid)
-
-m10_fit <- fitted(m_10)
-hist(m10_fit)
-
-
-plot(m10_fit, m10_resid) #fitted values vs residuals
-
-##November
-m_11 <- lme4::lmer(log_rot ~ temp_11 + precip_11 + (1 | bog),
-                   data = fruit_data_wide)
-
-m11_resid <- resid(m_11)
-hist(m11_resid)
-
-m11_fit <- fitted(m_11) 
-hist(m11_fit)
-
-plot(m11_fit, m11_resid)
-
-#summaries
-
-summary(m_9)
-summary(m_10)
-summary(m_11)
-
-
-
-
-
-# nlme_coef <- read_csv(here("data", "kqf_nlme_coef - Sheet1.csv"))
-# nlme_coef$temp <- abs(as.numeric(nlme_coef$temp))
-# nlme_coef$precip <- abs(as.numeric(nlme_coef$precip))
-
+#september mean
+fruit_data_wide %>%
+  group_by(bog) %>%
+  filter(is.na(temp_9) == F) %>%
+  summarize(max = max(temp_9),
+            min = min(temp_9),
+            mean = mean(temp_9),
+            median = median(temp_9),
+            n = n()) %>%
+  arrange(bog, .by_group = T)
 
 # Measures of center/Measures of spread----
 
-# #what are average rot percentages by kqf level?
-# rot_by_kqf <- fruit_data_combined %>%
-#   group_by(final_points) %>%
-#   summarize(mean = mean(rot_pct, na.rm = T))
+# what are average rot percentages by kqf level? drop unused factor levels and create shiny table
+fruit_data_wide %>% 
+
+  filter(is.na(rot_pct) == F) %>%
+  group_by(final_points) %>%
+  summarize(mean = mean(rot_pct, na.rm = T),
+            median = median(rot_pct, na.rm = T),
+            sd = sd(rot_pct, na.rm = T),
+            n = n()) %>%
+  arrange(desc(mean), .by_group = T) %>%
+  mutate(final_points = fct_relevel(factor(final_points), "2", "3", "4", "7")) %>%
+  kable(caption = "Average rot percentage by kqf level") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+  save_kable(here("report", "rot_by_kqf.jpeg"))
+
+
+rot_by_kqf <- fruit_data_combined %>%
+   group_by(final_points) %>%
+   summarize(mean = mean(rot_pct, na.rm = T))
 
 # 
 #average rot percentage by variety
@@ -119,6 +93,76 @@ fruit_data_wide %>%
 #             final_points = factor(unique(final_points)))
 #   
 # 
+
+#NLME model & diagnostics----
+
+##September
+m_9 <- lme4::lmer(log_rot ~ temp_9 + precip_9 + (1 | bog),
+                  data = fruit_data_wide)
+AIC(m_9)
+BIC(m_9)
+
+m9_resid <- resid(m_9)
+hist(m9_resid)
+
+m9_fit <- fitted(m_9)
+hist(m9_fit)
+
+
+plot(m9_fit, m9_resid) #fitted values vs residuals
+
+##October
+m_10 <- lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),
+                   data = fruit_data_wide)
+
+AIC(m_10)
+BIC(m_10)
+
+m10_resid <- resid(m_10)
+hist(m10_resid)
+
+m10_fit <- fitted(m_10)
+hist(m10_fit)
+
+
+plot(m10_fit, m10_resid,
+     xlab = "Predicted values",
+     ylab = "Residual values",
+     main = "Predicted vs Residuals") #fitted values vs residuals
+
+m_10 %>%
+  ggplot(aes(m10_fit, m10_resid)) + 
+  geom_point()
+##November
+m_11 <- lme4::lmer(log_rot ~ temp_11 + precip_11 + (1 | bog),
+                   data = fruit_data_wide)
+
+AIC(m_11)
+BIC(m_11)
+
+m11_resid <- resid(m_11)
+hist(m11_resid)
+
+m11_fit <- fitted(m_11) 
+hist(m11_fit)
+
+plot(m11_fit, m11_resid)
+
+#summaries
+
+summary(m_9)
+summary(m_10)
+summary(m_11)
+
+
+
+
+
+# nlme_coef <- read_csv(here("data", "kqf_nlme_coef - Sheet1.csv"))
+# nlme_coef$temp <- abs(as.numeric(nlme_coef$temp))
+# nlme_coef$precip <- abs(as.numeric(nlme_coef$precip))
+
+
 
 #Visualizations----
 #What is the value of the final KQF value as a general predictor of harvest quality (rot %, color, weight, etc.)?
@@ -179,15 +223,3 @@ fruit_data_wide %>%
 
 grow_nest <- fruit_data_wide %>%
   nest(-grower)
-##Summary statistics----
-
-#september mean
-fruit_data_wide %>%
-  group_by(bog) %>%
-  filter(is.na(temp_9) == F) %>%
-  summarize(max = max(temp_9),
-            min = min(temp_9),
-            mean = mean(temp_9),
-            median = median(temp_9),
-            n = n()) %>%
-  arrange(bog, .by_group = T)
