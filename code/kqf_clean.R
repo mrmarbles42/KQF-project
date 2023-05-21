@@ -80,7 +80,7 @@ temp_precip <- temp_precip %>%
 temp_precip$month_2 <- temp_precip$month
 temp_precip$month_0 <- temp_precip$month
 
-temp_precip <- temp_precip %>%
+temp_precip_wide <- temp_precip %>%
   #temp pivot
   pivot_wider(names_from =  month,
               names_prefix = "temp_",
@@ -155,26 +155,30 @@ pest_data_combined <- fungicide_use %>%
   rename("date" = "date_fungi") %>%
   full_join(points, by = c("year")) 
 
-  
 #fruit data combine----
+fruit_data_norm <- fruit_decas %>% 
+full_join(temp_precip, by = c("year", "month" = "month_0"), suffix = c("_fruit", "_temps")) %>% #join temp_precip on year and month
+  rename("date" = "date_fruit") %>% #rename date column
+  full_join(points, by = c("year")) %>% #join points on year col
+  select(-debris, -color, -month_temps, -month_2, -date_temps) %>% #remove extraneous columns
+  unique() #remove duplicates
 
 fruit_data_wide <- fruit_decas %>%
-  full_join(temp_precip, by = c("year", "month" = "month_0")) %>%
+  full_join(temp_precip_wide, by = c("year", "month" = "month_0")) %>%
   rename("date" = "date.x") %>%
   #join points on year col
   full_join(points, by = c("year")) %>%
   #Remove duplicates fruit data
-  unique()
+  unique() %>%
+  select(-debris, -color, -date.y) 
 
 #Fruit data pivot----
 
 # fruit_data_unique$month_2 <- fruit_data_unique$month
-# 
 # fruit_data_wide <- fruit_data_unique %>%
 #   filter(is.na(date) != T,
 #          year %in% c(2013,2014,2015,2016,2017,2018))
-# 
-# 
+
 # fruit_data_wide <- fruit_data_unique %>%
 #   #filter NA/month/year
 #   filter(is.na(date) != T,
@@ -216,5 +220,4 @@ rm(lw_ctrl_cig)
 
  rm(fruit_cig)
 
- rm(points,
-   temp_precip)
+ rm(points)
