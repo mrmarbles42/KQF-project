@@ -113,7 +113,7 @@ plot(m10_fit, m10_resid,
      ylab = "Residual values",
      main = "Predicted vs Residuals (model: m_10)") #fitted values vs residuals
 
-qqnorm(m_10)
+
 ##November
 m_11 <- lme4::lmer(log_rot ~ temp_11 + precip_11 + (1 | bog),
                    data = fruit_data_wide)

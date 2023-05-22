@@ -6,12 +6,6 @@ source(here("code", "kqf_analysis.R"))
 # nlme_coef <- read_csv(here("data", "kqf_nlme_coef - Sheet1.csv"))
 # nlme_coef$temp <- abs(as.numeric(nlme_coef$temp))
 
-nlme_coef %>%
-  filter(month %in% c(9,10,11)) %>%
-  ggplot(aes(as.factor(month), precip)) + 
-  geom_point() +
-  scale_y_continuous(limits = c(0,10), breaks = c(0, (sum(precip)/3), 10))
-
 #rot density plots
 
 fruit_data_wide %>%
@@ -34,7 +28,7 @@ fruit_data_wide %>%
 
 #----
 
-kqf_data_combined %>%
+kqf_data_norm %>%
   filter(log_rot > 0 & year != 2022 & is.na(final_points) != T) %>%
   ggplot(aes(log_rot)) +
   geom_histogram(bins = 50) +

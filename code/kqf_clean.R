@@ -165,6 +165,7 @@ full_join(temp_precip, by = c("year", "month" = "month_0"), suffix = c("_fruit",
 
 fruit_data_wide <- fruit_decas %>%
   full_join(temp_precip_wide, by = c("year", "month" = "month_0")) %>%
+  filter(is.na(data_source) == FALSE) %>%
   rename("date" = "date.x") %>%
   #join points on year col
   full_join(points, by = c("year")) %>%
