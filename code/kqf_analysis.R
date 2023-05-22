@@ -1,8 +1,6 @@
 
 library(here)
 library(lme4)
-library(GGally)
-library(broom)
 library(psych)
 source(here("code", "kqf_clean.R"))
 
