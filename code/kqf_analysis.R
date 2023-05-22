@@ -3,6 +3,7 @@ library(here)
 library(lme4)
 library(GGally)
 library(broom)
+library(psych)
 source(here("code", "kqf_clean.R"))
 
 ##Summary statistics----
@@ -66,16 +67,16 @@ fruit_data_wide %>%
 #   count(ingredient, sort = T) 
 #   
 # 
-# 
-# #relation between cumulative precip and kqf in march-october
-# fruit_data_combined %>%
-#   group_by(year) %>%
-#   filter(month %in% 3:10,
-#          year %in% 2013:2018) %>%
-#   summarize(cum_precip = sum(tot_precip),
-#             final_points = factor(unique(final_points)))
-#   
-# 
+
+#relation between cumulative precip and kqf in march-october
+fruit_data_norm %>%
+  group_by(year) %>%
+  filter(month %in% 3:10,
+         year %in% 2013:2018) %>%
+  summarize(mean_precip = mean(tot_precip),
+            final_points = factor(unique(final_points)))
+
+
 
 #NLME model & diagnostics----
 
