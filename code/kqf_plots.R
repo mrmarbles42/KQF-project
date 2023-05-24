@@ -2,7 +2,8 @@ require(here)
 
 #source(here("code", "kqf_clean.R"))
 source(here("code", "kqf_analysis.R"))
-# 
+
+
 # nlme_coef <- read_csv(here("data", "kqf_nlme_coef - Sheet1.csv"))
 # nlme_coef$temp <- abs(as.numeric(nlme_coef$temp))
 
@@ -94,9 +95,10 @@ fruit_data_wide %>%
   geom_point()
 
 #mean rot by year
-kqf_data_combined %>%
+fruit_data_norm %>%
   group_by(year) %>%
   filter(year %in% 2013:2018) %>%
   summarize(mean_rot = mean(rot_pct, na.rm = T))%>%
   ggplot(aes(factor(year), mean_rot)) +
-  geom_point() 
+  geom_point() +
+  geom_line()

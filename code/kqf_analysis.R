@@ -91,7 +91,10 @@ m9_fit <- fitted(m_9)
 hist(m9_fit)
 
 
-plot(m9_fit, m9_resid) #fitted values vs residuals
+plot(m9_fit, m9_resid,
+     xlab = "Predicted values",
+     ylab = "Residual values",
+     main = "Predicted vs Residuals (model: m_9)") #fitted values vs residuals
 
 ##October
 m_10 <- lme4::lmer(log_rot ~ temp_10 + precip_10 + (1 | bog),
@@ -126,7 +129,10 @@ hist(m11_resid)
 m11_fit <- fitted(m_11) 
 hist(m11_fit)
 
-plot(m11_fit, m11_resid)
+plot(m11_fit, m11_resid,
+     xlab = "Predicted values",
+     ylab = "Residual values",
+     main = "Predicted vs Residuals (model: m_11)") #fitted values vs residuals)
 
 #summaries
 
