@@ -9,7 +9,7 @@ output:
     number_sections: true
     toc_float: true
     theme: cosmo
-    code_folding: show
+    code_folding: hide
 ---
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
@@ -19,10 +19,13 @@ library(lubridate)
 require(here)
 require(ggplot2)
 require(knitr)
+require(visdat)
 ```
 
+# **Project pages**
+[KQF project github](https://github.com/mrmarbles42/KQF-project)
 
-# **Objective statement**
+# **Semester Objective**
 
 - Collect and prepare data files into a cohesive data set 
 - Check for consistency, accuracy, and uniformity
@@ -30,8 +33,10 @@ require(knitr)
 
 # **Input data descriptions** {.tabset}
 \n
+
 - **Structure diagram of input data**
-\n
+
+
 ```{r echo=FALSE}
 include_graphics(here("report", "data_structure.png"), dpi= 40)
 ```
@@ -431,11 +436,36 @@ kqf_data_combined <- kqf_data_combined %>%
 
 \newpage
 # **Data exploration** {.tabset}
+## Whole dataset
+
+**Combined dataset classes**
+```{r warning=FALSE, message=FALSE}
+vis_dat(kqf_data_combined)
+```
+
+**Combined dataset missing data structure**
+```{r warning=FALSE, message=FALSE}
+vis_miss(kqf_data_combined)
+```
+\n
+
+
+**Summary statistics**
+```{r}
+kqf_data_combined %>%
+  summary(.)
+```
 
 ## Fruit quality
 ### Graphical
+#### By year
 
 **log(Rot) percentage by year**
+
+- Description: Boxplot showing log-transformed rot percentages separated by year
+
+- interpretation:
+
 ```{r warning=FALSE}
 kqf_data_combined %>%
   group_by(year) %>%
@@ -447,7 +477,15 @@ kqf_data_combined %>%
        title = "Log(Rot) Percentage by Year") +
   theme_grey() 
 ```
-** log(rot) by variety
+
+#### by variety
+
+**log(rot) by variety**
+
+- Description: Boxplot of log-transformed rot percentage by cranberry variety
+
+- interpretation: The plot shows apparent differences between different cranberry varieties, with Stevens (ST) having the highest mean rot percentage value and the "other" category having the lowest. Stevens is also the most common variety within the data set.
+
 ```{r}
 kqf_data_combined$variety <- factor(kqf_data_combined$variety, levels = c("other", "BL", "EB", "HO", "ST"))
 
@@ -458,23 +496,92 @@ kqf_data_combined %>%
   geom_boxplot() +
   labs(x = "Variety",
        y = "Rot % (log)",
-       title = "Log(Rot) Percentage by Variety") +
+       title = "Rot Percentage (log) by Variety") +
   theme_grey() 
+```
+\n
+
+#### By KQF
+
+**log(rot) by KQF**
+
+- **Description:** Boxplot showing the log-transformed rot percentage versus the final KQF points that were present in the selected year range (2013-18)
+
+- **Interpretation:** In this graphic it appears that there is no clear relationship between final KQF and rot percentage in the selected period.
+
+```{r}
+include_graphics(here("report", "kqf_vs_logrot.png"), dpi = 100)
 ```
 
 
 ### numerical
+
+**Decas quality parameter summary**
+```{r}
+kqf_data_combined %>%
+filter(data_source =="decas") %>%
+  filter(is.na(rot_pct) == F) %>%
+  select(rot_pct,  color, variety) %>%
+  summary(.)
+```
+
+**CIG quality paramter summary**
+```{r}
+kqf_data_combined %>%
+  filter(data_source == "cig" | data_source == "cig_lw") %>%
+  filter(is.na(rot_pct) == F) %>%
+  select(wt_p_berry, rot_pct, tacy, absorbance, variety) %>%
+  summary(.)
+```
+
 
 ## KQF
 ### graphical
+
+**Preliminary KQF vs Final KQF (normalized)**
+
+- **Description:** Bar graph of KQF point values by year w/ Final values in red and preliminary values in blue
+\n
+
+- **Interpretation:** There is no apparent relationship between preliminary and final kqf values. Neither values are consistently higher or lower than the other and there seems to be inconstant variation between them.
+```{r echo=FALSE}
+include_graphics(here("report", "kqf_by_year_norm.png"), dpi= 40)
+```
+
+
+#### KQF correlations
+
+- **Description:** Correlation heat map of KQF values compared to climate values using Spearman correlation method
+
+- **interpretation:** Pre- and final KQF values are closely correlated with each other (as expected). There also appears to be a positive correlation between KQF values and total precipitation as well as a negative correlation between average temperature and KQF.
 ```{r}
+kqf_data_combined %>%
+  select(final_points, pre_points,avg_temp_f, tot_precip) %>%
+  vis_cor(cor_method = "spearman")
+```
+\n
+
+- **Description:** Correlation heat map of KQF values compared to quality parameter values using Spearman correlation method
+
+- **Interpretation:** Rot percentage appears to be negatively correlated with total anthocyanin content. There does not appear to be any other apparent correlations in this graphic 
+```{r}
+kqf_data_combined %>%
+  select(final_points, pre_points,rot_pct, tacy, color) %>%
+  vis_cor(cor_method = "spearman")
+
+summary(kqf_data_combined)
+```
+
+
+### numeric
+```{r}
+# # Avg_temp F ~ tot_precip
+# cor(kqf_data_combined$avg_temp_f, kqf_data_combined$tot_precip,
+#     method = "spearman",
+#     use = "pairwise.complete.obs")
 
 ```
 
-### numerical
-```{r}
-
-```
 
 # **Further considerations**
 ### **Questions that arose in the process:**

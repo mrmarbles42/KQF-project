@@ -102,3 +102,26 @@ fruit_data_norm %>%
   ggplot(aes(factor(year), mean_rot)) +
   geom_point() +
   geom_line()
+
+levels <- c(2,3,4,7,NA)
+
+fruit_data_wide %>%
+  droplevels(.$final_points) %>%
+  filter(final_points %in% levels) %>%
+  ggplot(aes(factor(final_points), log_rot)) +
+  geom_jitter() +
+  geom_boxplot() +
+  stat_summary(fun = mean, geom = "point", shape = 4, size = 3, color = "red") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25) +
+  labs(x = "Final KQF Value",
+             y = "Rot percentage %",
+             title = "Rot Percentage(log-normalized) vs Final KQF Value") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_color_manual(values = c("red", "blue", "green", "orange", "purple", "black")) +
+  theme(legend.position = "none")
+
+
+
+  plot(fruit_data_norm$rot_pct, fruit_data_norm$temp_9,
+       ylab = "Temperature",
+       xlab = "Rot percentage")

@@ -2,6 +2,7 @@
 library(here)
 library(lme4)
 library(psych)
+library(nlme)
 source(here("code", "kqf_clean.R"))
 
 ##Summary statistics----
