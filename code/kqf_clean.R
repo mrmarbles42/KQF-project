@@ -38,8 +38,8 @@ fruit_decas <- fruit_decas %>%
          "rot_pct" = "rot")
 
 ##factor kqf values
-fruit_decas$kqf_final <- as.factor(fruit_decas$kqf_final)
-fruit_decas$kqf_pre <- as.factor(fruit_decas$kqf_pre)
+# fruit_decas$kqf_final <- as.factor(fruit_decas$kqf_final)
+# fruit_decas$kqf_pre <- as.factor(fruit_decas$kqf_pre)
 
 #CIG fruit data 2021----
 
@@ -87,8 +87,8 @@ fruit_cig <- fruit_cig %>%
   bind_rows(lw_ctrl_cig)
 
 #factor kqf values
-fruit_cig$kqf_final <- as.factor(fruit_cig$kqf_final)
-fruit_cig$kqf_pre <- as.factor(fruit_cig$kqf_pre)
+# fruit_cig$kqf_final <- as.factor(fruit_cig$kqf_final)
+# fruit_cig$kqf_pre <- as.factor(fruit_cig$kqf_pre)
 
 #Decas pest data 2011-2018----
 
@@ -252,4 +252,22 @@ rm(fruit_cig,
 rm(fruit_temp_combined,
    pest_temp_combined)
 
-fwrite(kqf_data_combined, "kqf_data_combined.csv")
+# fwrite(kqf_data_combined, "kqf_data_combined.csv")
+
+kqf_data_combined$kqf_final
+kqf_data_combined$kqf_pre
+
+kqf_data_combined$kqf_pre = as.numeric(as.character(kqf_data_combined$kqf_pre))
+
+plot(jitter(kqf_final) ~ jitter(kqf_pre), data = kqf_data_combined)
+plot(rot_pct ~ jitter(kqf_pre), data = kqf_data_combined)
+
+
+
+class(kqf_data_combined$kqf_final)
+glimpse(kqf_data_combined)
+
+
+
+
+

@@ -26,7 +26,7 @@ fruit_decas$GTL <- NULL
 fruit_decas <-
   rbindlist(fruit_decas,
         fill = T)
-fwrite(fruit_decas, "decas_fruit_2013-2018.csv")
+# fwrite(fruit_decas, "decas_fruit_2013-2018.csv")
 
 
 fruit_decas <- fruit_decas %>%
@@ -81,3 +81,4 @@ rm(fruit_12,
    fruit_16,
    fruit_17,
    fruit_18)
+
