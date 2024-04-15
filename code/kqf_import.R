@@ -22,11 +22,16 @@ fruit_decas <- list(fruit_13,
                     fruit_16,
                     fruit_17,
                     fruit_18)
+
 fruit_decas$GTL <- NULL
 fruit_decas <-
   rbindlist(fruit_decas,
         fill = T)
+<<<<<<< HEAD
 # fwrite(fruit_decas, "decas_fruit_2013-2018.csv")
+=======
+#fwrite(fruit_decas, "decas_fruit_2013-2018.csv")
+>>>>>>> 440cbed273398a07b9ab4d6d52f1660fb9e3401e
 
 
 fruit_decas <- fruit_decas %>%
@@ -36,30 +41,26 @@ fruit_decas <- fruit_decas %>%
          Rot,
          Debris,
          Color,
-         Variety,
-         kqf_pre,
-         kqf_final)
+         Variety)
 
-colnames(fruit_decas) <- c("grower_id",
+colnames(fruit_decas) <- c("grower",
                                 "date",
                                 "bog",
-                                "rot",
+                                "rot_pct",
                                 "debris",
                                 "color",
-                                "variety",
-                                "kqf_pre",
-                                "kqf_final")
+                                "variety")
 
-#import decas_fruit data
+
 #fruit_decas <- fread(here("data", "decas_fruit_2013-2018.csv"))
 
 #CIG fruit data 2021----
 
-##import 24-site CIG data 
+##import 24-site CIG data
 fruit_cig <- fread(here("data/base_files", "cig_yield_bloom.csv"))
 
-##import latewater control data
-lw_ctrl_cig <- fread(here("data", "2021_cig_latewater_controls.csv"))
+##import latewater control data----
+lw_ctrl_cig <- fread(here("data/base_files", "2021_cig_latewater_controls.csv"))
 
 #Decas pest data 2011-2018----
 pest_decas <- fread(here("data/base_files","pest_use_decas.csv"))
@@ -69,16 +70,23 @@ pest_decas <- fread(here("data/base_files","pest_use_decas.csv"))
 pest_cig <- fread(here("data/base_files", "pest_use_cig.csv"))
 
 #climate parameters 2003-2020----
+#data import
 temp_precip <- fread(here("data/base_files", "kqf_temp_precip.csv"))
 
+#kqf points----
+points <- fread(here("data/base_files", "kqf_points.csv"))
 
 
-
+#ENV object removal
 rm(fruit_12,
    fruit_13,
    fruit_14,
    fruit_15,
    fruit_16,
    fruit_17,
+<<<<<<< HEAD
    fruit_18)
 
+=======
+   fruit_18)
+>>>>>>> 440cbed273398a07b9ab4d6d52f1660fb9e3401e

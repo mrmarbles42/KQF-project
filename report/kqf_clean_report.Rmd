@@ -1,0 +1,606 @@
+---
+title: "KQF cleaning report"
+subtitle: "Fall 2022"
+author: "Evan Krause"
+date: "2022-12-11"
+output: 
+  html_document:
+    toc: true
+    number_sections: true
+    toc_float: true
+    theme: cosmo
+    code_folding: hide
+---
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(data.table)
+library(lubridate)
+require(here)
+require(ggplot2)
+require(knitr)
+require(visdat)
+```
+
+# **Project pages**
+[KQF project github](https://github.com/mrmarbles42/KQF-project)
+
+# **Semester Objective**
+
+- Collect and prepare data files into a cohesive data set 
+- Check for consistency, accuracy, and uniformity
+- Remove redundant or inapplicable information
+
+# **Input data descriptions** {.tabset}
+\n
+
+- **Structure diagram of input data**
+
+
+```{r echo=FALSE}
+include_graphics(here("report", "data_structure.png"), dpi= 40)
+```
+
+## Decas {.tabset}
+### Decas fruit data
+- File name: grower_yield _rpt_2012- 2018.csv (8 files)
+- Dimensions: 4650 x 21
+- Date range: September – November (2012 – 2018)
+- Description: harvest quality data from Decas growers
+- Imported as: **“fruit_decas”**
+```{r Decas fruit data, message=FALSE, warning=FALSE}
+#data file import
+fruit_12 <- fread(here("data/base_files","grower_yield_rpt_2012.csv"))
+fruit_13 <- fread(here("data/base_files","grower_yield_rpt_2013.csv"))
+fruit_14 <- fread(here("data/base_files","grower_yield_rpt_2014.csv"))
+fruit_15 <- fread(here("data/base_files","grower_yield_rpt_2015.csv"))
+fruit_16 <- fread(here("data/base_files","grower_yield_rpt_2016.csv"))
+fruit_17 <- fread(here("data/base_files","grower_yield_rpt_2017.csv"))
+fruit_18 <- fread(here("data/base_files","grower_yield_rpt_2018.csv"))
+
+#combine as list
+fruit_decas <- list(fruit_13,
+                    fruit_14,
+                    fruit_15,
+                    fruit_16,
+                    fruit_17,
+                    fruit_18)
+
+#remove duplicate column
+fruit_decas$GTL <- NULL
+
+#bind list
+fruit_decas <-
+  rbindlist(fruit_decas,
+        fill = T)
+
+#select columns
+fruit_decas <- fruit_decas %>%
+  select(grower_id,
+         deliver_date,
+         Bog,
+         Rot,
+         Debris,
+         Color,
+         Variety)
+#rename columns
+colnames(fruit_decas) <- c("grower",
+                                "date",
+                                "bog",
+                                "rot_pct",
+                                "debris",
+                                "color",
+                                "variety")
+```
+
+### Decas pesticide data 
+- File name: Pest_use_decas.csv 
+- Dimensions: 62,915 x 11
+- Date range: March – October (2011 – 2018)
+- Description: Pesticide application data from Decas growers
+- Imported as: **“pest_decas”**
+```{r message=FALSE, warning=FALSE}
+#data file import
+pest_decas <- fread(here("data/base_files","pest_use_decas.csv"))
+```
+
+## CIG {.tabset}
+### CIG fruit data
+- File name: cig_yield_bloom.csv 
+- Dimensions: 95 x 10 
+- Date range: 2021
+- Description: Harvest quality data from L. Uppala
+- Imported as: **“fruit_cig”**
+```{r message=FALSE, warning=FALSE}
+#data file import
+fruit_cig <- fread(here("data/base_files", "cig_yield_bloom.csv"))
+```
+
+### CIG latewater control data
+- File name: 2021_cig_latewater_controls.csv 
+- Dimensions: 20 x 8
+- Date range: 2021
+- Description:  Harvest quality data (latewater experimental controls) from L. Uppala
+- Imported as: **“lw_ctrl_cig”**
+```{r message=FALSE, warning=FALSE}
+#data file import
+lw_ctrl_cig <- fread(here("data", "2021_cig_latewater_controls.csv"))
+```
+
+### CIG pesticide use data
+- File name: pest_use_cig.csv
+- Dimensions: 350 x 9
+- Date range: May – August (2012 — 2021)
+- Description: Pesticide application data from CIG growers
+- Imported as: **“pest_cig”**
+```{r message=FALSE, warning=FALSE}
+#data file import
+pest_cig <- fread(here("data/base_files", "pest_use_cig.csv"))
+```
+
+## Temperature and precipitation
+- File name: kqf_temp_precip.csv
+- Dimensions: 240 x 5
+- Date range: January 2003 - December 2021
+- Description: Average temperature (F) and total precipitation (in) by month
+- Imported as: **“temp_precip”**
+```{r message=FALSE, warning=FALSE}
+#data file import
+temp_precip <- fread(here("data/base_files", "kqf_temp_precip.csv"))
+```
+
+## KQF point values
+- File name: kqf_points.csv
+- Dimensions: 32 x 3
+- Date range: 1991 – 2021
+- Description: Preliminary and Final KQF points by year
+- Imported as: **“points”**
+```{r message=FALSE, warning=FALSE}
+points <- fread(here("data/base_files", "kqf_points.csv"))
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(fruit_12,
+   fruit_13,
+   fruit_14,
+   fruit_15,
+   fruit_16,
+   fruit_17,
+   fruit_18)
+```
+\newpage 
+
+# **Data processing** {.tabset}
+## Decas {.tabset}
+### Decas fruit quality 
+- Initial xlsx files reformatted and extraneous rows removed (in excel) 
+- 2012 – 2018 reports combined as list and bound by row
+- Selected for columns “grower_id”, “deliver_date”, “Bog”, “Rot”, “debris”, “Color”, and “variety” 
+- Column names reformatted
+- Date column changed from character class to POSIXct (datetime class)
+- Rows with NA value in rot percentage column excluded
+- Log transform of rot percentage column created 
+- variety column condensed into most common varieties and “other” factors
+- Year and month columns created
+- Data_source column created and given value “decas”
+- Date column moved to first position
+
+```{r warning=FALSE}
+##date manipulation
+fruit_decas$date <- parse_date_time(fruit_decas$date, "mdy")
+
+##collapsed varieties vector
+other_varieties = c("OE","ORST","OH",
+                    "OM","GR","OB",
+                    "SN","MC","SK",
+                    "ORHO","OS","MX",
+                    "GD","PD")
+
+fruit_decas <- fruit_decas %>%
+  ##exclude rows w/ NA values in rot
+  filter(is.na(rot_pct) == F) %>%
+  ##create log_rot / year / month columns and collapse varieties by frequency
+  mutate(
+    log_rot = log10(rot_pct + 1) ,
+    variety = fct_collapse(variety, other = other_varieties),
+    year = lubridate::year(date),
+    month = lubridate::month(date),
+  ##create data_source column
+    data_source = as.factor("decas")
+  ) %>%
+  ##relocate date column to [,1]
+  relocate(date)
+
+```
+
+### Decas pesticide use
+- Date column changed from character class to POSIXct (datetime class)
+- Selected for columns “date”, “grower”, “bog”, “treatment”, “active_ingredient”
+- Date column moved to first position
+- Data_source column created and given value “decas”
+
+```{r}
+##application_date (char to POSIXct)
+pest_decas$date <- parse_date_time(pest_decas$application_date, "mdy") 
+
+pest_decas <- pest_decas %>%
+  #remove old application_date and extraneous columns
+  select(date,
+         grower,
+         bog,
+         treatment,
+         active_ingredient) %>%
+  #relocate new date column
+  relocate(date) %>%
+  #create data_source column
+  mutate(data_source = "decas")
+```
+## CIG {.tabset}
+### CIG fruit quality {.tabset}
+#### fruit_cig
+- Rows with NA value in rot percentage column excluded
+- Log transform of rot percentage column created
+- variety column created and given value “ST”
+- Year and month columns created
+- Data_source column created and given value “cig”
+- Column names reformatted
+
+```{r}
+fruit_cig <- fruit_cig %>%
+  ##exclude rows w/ NA values in rot
+  filter(is.na(rot_pct) == F) %>%
+  ##create log_rot, variety, year, and data source columns
+  mutate(
+    log_rot = log10(rot_pct + 1),
+    variety = as_factor("ST"),
+    year = 2021,
+    month = 10,
+    data_source = "cig"
+  ) %>%
+  rename("yield_acre_barrel" = "yield_per_ac_barrel",
+         "yield_ha_barrel" = "yield_p_ha_barrel",
+         "yield_ac_kg" = "yield_p_ac_kg",
+         "yield_ac_lb" = "yield_p_ac_lb",
+         "site" = "Site",
+         "rep" = "Rep")
+```
+
+#### Lw_ctrl_cig
+- Column names reformatted
+- Log transform of rot percentage column created 
+- Converted yield columns created
+- Data_source column created and given value “cig_lw”
+- Site column created and given value 0
+- variety column created and given value “ST”
+
+```{r}
+lw_ctrl_cig <- lw_ctrl_cig %>%
+#rename cols based on cig_fruit names
+  rename("yield_acre_barrel" = "yield per acre",
+         "rot_pct" = "pct_rot",
+         "wt_p_berry" = "wt_per_berry") %>%
+  #create yield, data_source, site, variety, kqf, and log(rot) columns
+  mutate(yield_ha_barrel = yield_acre_barrel * 2.471,
+         yield_ac_kg = yield_acre_barrel * 45.35929257,
+         yield_ac_lb = yield_ac_kg * 2.20463,
+         data_source = "cig_lw",
+         site = 0,
+         log_rot = log10(rot_pct + 1),
+         variety = "ST")
+```
+
+### CIG pesticide use
+- Date column created as POSIXct class
+- Selected for columns “date”, “grower”, “bog”, “treatment”, “active_ingredient”
+- Date column moved to first position
+- Data_source column created and given value “cig”
+```{r}
+pest_cig <- pest_cig %>%
+  ##application_date (char to POSIXct)
+  mutate(date = parse_date_time(application_date, orders = "ymd")) %>%
+  #remove old application_date and select non-extraneous columns
+  select(date,
+         grower,
+         Bog,
+         treatment,
+         active_ingredient) %>%
+  #relocate new date column
+  relocate(date) %>%
+  #create data_source col
+  mutate(data_source = 'cig') %>%
+  rename("bog" = "Bog")
+```
+
+## Temperature and precipitation
+- Year and month columns created
+```{r}
+temp_precip <- temp_precip %>%
+  mutate(month = lubridate::month(date),
+         year = lubridate::year(date))
+```
+
+## KQF points
+- date_year column renamed to year
+```{r}
+points <- points %>%
+  mutate(year = as.numeric(date_year))
+```
+## Combined data {.tabset}
+### Combined pesticide data
+- Pest_cig and pest_decas tables merged on specified columns into **“pest_comb”** table
+- Year and month columns created-
+- Duplicated ingredients from active_ingredient column renamed and collapsed into single factors
+- Active_ingredient column filtered for selected fungicides and renamed “fungicide_use”
+- Temp_precip table and fungicide_use tables merged by year and month columns into table “pest_temp_combined”
+```{r}
+##define join columns
+comb_pest_cols <- c("date", 
+                    "treatment", 
+                    "active_ingredient", 
+                    "grower", 
+                    "bog", 
+                    "data_source")
+
+##full join on defined columns
+pest_comb <- pest_decas %>%
+  full_join(pest_cig, by = comb_pest_cols, suffix = c("_decas", "_cig")) %>%
+  mutate(month = lubridate::month(date),
+         year = lubridate::year(date))
+
+#redefine and collapse repeated fungicides
+pest_comb$active_ingredient <-
+  str_replace_all(
+    pest_comb$active_ingredient,
+    c(
+      "Manganese ethylenebisdithiocarbamate" = "EBDC",
+      "Mancozeb" = "EBDC",
+      "EDBC" = "EBDC",
+      "Polyoxin D Zinc Salt" = "Polyoxin D",
+      "Polyoxin D zinc salt" = "Polyoxin D"
+    )
+  )
+
+#define alternative fungicides
+other_ingredients <- c("Cuprous Oxide",
+                       "Fosetyl-Al",
+                       "Polyoxin D")
+
+fungicide_use <- pest_comb %>%
+  #filter out non-fungicide treatments
+  filter(
+    active_ingredient %in% c(
+      "Copper Hydroxide",
+      "Cuprous Oxide",
+      "Polyoxin D",
+      "Chlorothalonil",
+      "Azoxystrobin",
+      "Fenbuconazole",
+      "Fosetyl-Al",
+      "EBDC",
+      "Ferbam"
+    )
+  ) %>%
+  #collapse fungicides w/ <50 instances and rm original column
+  mutate(ingredient = fct_collapse(active_ingredient,
+                                   other = other_ingredients)) %>%
+  select(-active_ingredient)
+  
+pest_temp_combined <- fungicide_use %>%
+  full_join(temp_precip, by = c("year", "month"), suffix = c("_fungi", "_temps")) %>%
+  select(-date_temps) %>%
+  rename("date" = "date_fungi")
+
+```
+
+### Combined fruit quality data
+- Fruit_cig and fruit_decas tables bound by rows into table **“fruit_comb”**
+- Temp_precip table and fruit_comb tables merged by year and month columns into table “fruit_temp_combined”
+```{r}
+fruit_comb <- bind_rows(fruit_cig, fruit_decas)
+
+fruit_temp_combined <- fruit_comb %>%
+  full_join(temp_precip, by = c("year", "month")) %>%
+  select(-date.y) %>%
+  rename("date" = "date.x")
+
+```
+
+### Full dataset
+- Fruit_temp_combined and pest_temp_combined tables merged on specified columns into **“kqf_data_combined”** table
+- “Variety”, “site”, “rep”, “data_source”, “treatment”, and “ingredient” columns coerced to factors
+- Kqf_data_combined and points tables merged on year column into “kqf_data_combined”
+
+```{r}
+##define joining columns for combined data
+comb_cols <- c("data_source", "date", "month", "year", "avg_temp_f", "tot_precip", "grower", "bog")
+
+#Join all columns on joining vec
+kqf_data_combined <- fruit_temp_combined %>%
+  full_join(pest_temp_combined,
+            by = comb_cols,
+            suffix = c("_fruit", "_pest"))
+
+##factor coercion
+kqf_data_combined$variety <- as_factor(kqf_data_combined$variety)
+kqf_data_combined$site <- as_factor(kqf_data_combined$site)
+kqf_data_combined$rep <- as_factor(kqf_data_combined$rep)
+kqf_data_combined$data_source <- as_factor(kqf_data_combined$data_source)
+kqf_data_combined$treatment <- as_factor(kqf_data_combined$treatment)
+kqf_data_combined$ingredient <- as_factor(kqf_data_combined$ingredient)
+
+#join kqf points column
+kqf_data_combined <- kqf_data_combined %>%
+  full_join(points, by = c("year")) %>%
+  select(-date_year)
+```
+
+\newpage
+# **Data exploration** {.tabset}
+## Whole dataset
+
+**Combined dataset classes**
+```{r warning=FALSE, message=FALSE}
+vis_dat(kqf_data_combined)
+```
+
+**Combined dataset missing data structure**
+```{r warning=FALSE, message=FALSE}
+vis_miss(kqf_data_combined)
+```
+\n
+
+
+**Summary statistics**
+```{r}
+kqf_data_combined %>%
+  summary(.)
+```
+
+## Fruit quality
+### Graphical
+#### By year
+
+**log(Rot) percentage by year**
+
+- Description: Boxplot showing log-transformed rot percentages separated by year
+
+- interpretation:
+
+```{r warning=FALSE}
+kqf_data_combined %>%
+  group_by(year) %>%
+  filter(year %in% 2013:2018) %>%
+  ggplot(aes(as.factor(year), log_rot)) +
+  geom_boxplot() +
+  labs(x = "Year",
+       y = "Rot % (log)",
+       title = "Log(Rot) Percentage by Year") +
+  theme_grey() 
+```
+
+#### by variety
+
+**log(rot) by variety**
+
+- Description: Boxplot of log-transformed rot percentage by cranberry variety
+
+- interpretation: The plot shows apparent differences between different cranberry varieties, with Stevens (ST) having the highest mean rot percentage value and the "other" category having the lowest. Stevens is also the most common variety within the data set.
+
+```{r}
+kqf_data_combined$variety <- factor(kqf_data_combined$variety, levels = c("other", "BL", "EB", "HO", "ST"))
+
+kqf_data_combined %>%
+  group_by(variety) %>%
+  filter(is.na(variety) != T) %>%
+  ggplot(aes(as.factor(variety), log_rot)) +
+  geom_boxplot() +
+  labs(x = "Variety",
+       y = "Rot % (log)",
+       title = "Rot Percentage (log) by Variety") +
+  theme_grey() 
+```
+\n
+
+#### By KQF
+
+**log(rot) by KQF**
+
+- **Description:** Boxplot showing the log-transformed rot percentage versus the final KQF points that were present in the selected year range (2013-18)
+
+- **Interpretation:** In this graphic it appears that there is no clear relationship between final KQF and rot percentage in the selected period.
+
+```{r}
+include_graphics(here("report", "kqf_vs_logrot.png"), dpi = 100)
+```
+
+
+### numerical
+
+**Decas quality parameter summary**
+```{r}
+kqf_data_combined %>%
+filter(data_source =="decas") %>%
+  filter(is.na(rot_pct) == F) %>%
+  select(rot_pct,  color, variety) %>%
+  summary(.)
+```
+
+**CIG quality paramter summary**
+```{r}
+kqf_data_combined %>%
+  filter(data_source == "cig" | data_source == "cig_lw") %>%
+  filter(is.na(rot_pct) == F) %>%
+  select(wt_p_berry, rot_pct, tacy, absorbance, variety) %>%
+  summary(.)
+```
+
+
+## KQF
+### graphical
+
+**Preliminary KQF vs Final KQF (normalized)**
+
+- **Description:** Bar graph of KQF point values by year w/ Final values in red and preliminary values in blue
+\n
+
+- **Interpretation:** There is no apparent relationship between preliminary and final kqf values. Neither values are consistently higher or lower than the other and there seems to be inconstant variation between them.
+```{r echo=FALSE}
+include_graphics(here("report", "kqf_by_year_norm.png"), dpi= 40)
+```
+
+
+#### KQF correlations
+
+- **Description:** Correlation heat map of KQF values compared to climate values using Spearman correlation method
+
+- **interpretation:** Pre- and final KQF values are closely correlated with each other (as expected). There also appears to be a positive correlation between KQF values and total precipitation as well as a negative correlation between average temperature and KQF.
+```{r}
+kqf_data_combined %>%
+  select(final_points, pre_points,avg_temp_f, tot_precip) %>%
+  vis_cor(cor_method = "spearman")
+```
+\n
+
+- **Description:** Correlation heat map of KQF values compared to quality parameter values using Spearman correlation method
+
+- **Interpretation:** Rot percentage appears to be negatively correlated with total anthocyanin content. There does not appear to be any other apparent correlations in this graphic 
+```{r}
+kqf_data_combined %>%
+  select(final_points, pre_points,rot_pct, tacy, color) %>%
+  vis_cor(cor_method = "spearman")
+
+summary(kqf_data_combined)
+```
+
+
+### numeric
+```{r}
+# # Avg_temp F ~ tot_precip
+# cor(kqf_data_combined$avg_temp_f, kqf_data_combined$tot_precip,
+#     method = "spearman",
+#     use = "pairwise.complete.obs")
+
+```
+
+
+# **Further considerations**
+### **Questions that arose in the process:**
+\n
+- Is there a relationship between fungicide application counts and KQF values by year?
+
+- What is the correlation between number/type of fungicide applications and mean rot %? and Kqf value?
+
+- Which KQF factor is a better single predictor of quality; total precipitation, sunshine hours, or average temperature? 
+
+- Is final KQF the most effective for prediction? What is the relative predictive strength/weakness of the preliminary KQF compared to final?
+
+
+### **Next steps:**
+
+- Integrate additional data points into the combined set (as appropriate)
+
+- Fully define investigative hypotheses
+
+- Perform more comprehensive data analysis to test hypotheses
+
+- Construct publication-quality graphics and tables
